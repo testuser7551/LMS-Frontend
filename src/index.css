@@ -1,0 +1,128 @@
+@import "tailwindcss";
+
+@theme {
+  /* ---------- Brand Colors ---------- */
+  --color-primary: #000000;
+  --color-secondary: #333333;
+  --color-activecolor: #EDEDED;
+  --color-headcolor: #1A1A1A;
+  --color-bgcolor: #FFFFFF;
+  --color-subbgcolor: #F5F5F5;
+  --color-secondarybgcolor: #E5E5E5;
+  --color-text: #000000;
+  --color-headtext: #333333;
+  --color-subtext: #666666;
+  --color-highlight: #999999;
+  --color-danger: #000000;
+  --color-success: #000000;
+  --color-warning: #000000;
+  --color-border: #B8B8B8;
+  /* ---------- Buttons ---------- */
+  --color-btn-primary: var(--color-primary);
+  --color-btn-primary-hover: var(--color-secondary);
+  --color-btn-secondary: var(--color-activecolor);
+
+  /* ---------- Typography ---------- */
+  --font-roboto: 'Roboto', sans-serif;
+  --font-outfit: 'Outfit', sans-serif;
+  --font-poppins: 'Poppins', sans-serif;
+}
+
+/* Roboto font faces */
+@font-face {
+  font-family: 'Roboto';
+  src: url('./assets/fonts/Roboto/static/Roboto-Regular.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Roboto';
+  src: url('./assets/fonts/Roboto/static/Roboto-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+}
+
+/* outfit */
+@font-face {
+  font-family: 'Outfit';
+  src: url('./assets/fonts/Outfit/static/Outfit-Regular.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Outfit';
+  src: url('./assets/fonts/Outfit/static/Outfit-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+}
+
+/* poppins */
+
+@font-face {
+  font-family: 'Poppins';
+  src: url('./assets/fonts/Poppins/Poppins-Regular.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Poppins';
+  src: url('./assets/fonts/Poppins/Poppins-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+}
+
+/* -------------------- SCROLLBAR STYLES -------------------- */
+/* Works for WebKit browsers (Chrome, Edge, Safari) */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-primary, #6366f1);
+  /* 👈 use your theme primary */
+  border-radius: 9999px;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-primary, #6366f1) transparent;
+}
+
+
+/* Custom progress bar color */
+.custom-toast {
+  background: rgb(255, 255, 255) !important;
+  /* transparent black */
+  color: #000000 !important;
+  /* white text */
+  font-family: 'Poppins', sans-serif;
+  /* custom font */
+  font-size: 18px;
+  /* adjust size */
+  font-weight: 500;
+  /* semi-bold */
+  text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.7);
+  /* text shadow */
+  border-radius: 10px 0px 0px 10px !important;
+  padding: 12px 16px !important;
+  box-shadow: 0 4px 15px rgba(77, 77, 77, 0.4),
+    0 0 10px rgba(255, 255, 255, 0.1);
+}
+
+/* closebutton */
+.custom-toast .Toastify__close-button {
+  color: rgb(0, 0, 0) !important;
+}
+/* Custom progress bar color */
+.toast-progress {
+  background: rgb(0, 0, 0) !important;
+  /* Change to any color you like */
+}
