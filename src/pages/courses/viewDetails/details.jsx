@@ -73,35 +73,42 @@ const Details = () => {
               <div className="w-full xl:px-30 lg:px-15 md:px-10 px-5 mx-auto mt-6 space-y-4">
                 <h2 className="text-xl font-semibold text-primary">Chapters</h2>
                 {course.chapters.length > 0 ? (
-                  course.chapters.map((chapter, chIndex) => (
-                    <div
-                      key={chIndex}
-                      className="bg-[#E5E7EB] rounded-lg shadow-sm mb-4 border border-[#6B7280]/30"
-                    >
+                  course.chapters
+                    .filter((chapter) => chapter.lessons.length > 0) // Filter out chapters with no lessons
+                    .map((chapter, chIndex) => (
                       <div
-                        className="p-4 cursor-pointer flex justify-between items-center transition"
-                        onClick={() =>
-                          setOpenChapter(
-                            openChapter === chIndex ? null : chIndex
-                          )
-                        }
+                        key={chIndex}
+                        className="bg-[#E5E7EB] rounded-lg shadow-sm mb-4 border border-[#6B7280]/30"
                       >
-                        <div className="flex items-center gap-3">
-                          {openChapter === chIndex ? (
-                            <ChevronDown className="w-5 h-5 text-primary" />
-                          ) : (
-                            <ChevronRight className="w-5 h-5 text-primary" />
-                          )}
-                          <h3 className="font-medium text-primary">
-                            {chapter.chapterTitle}
-                          </h3>
+                        <div
+                          className="p-4 cursor-pointer flex justify-between items-center transition"
+                          onClick={() =>
+                            setOpenChapter(
+                              openChapter === chIndex ? null : chIndex
+                            )
+                          }
+                        >
+                          <div className="flex items-center gap-3">
+                            {openChapter === chIndex ? (
+                              <ChevronDown className="w-5 h-5 text-primary" />
+                            ) : (
+                              <ChevronRight className="w-5 h-5 text-primary" />
+                            )}
+                            <h3 className="font-medium text-primary">
+                              {chapter.chapterTitle}
+                            </h3>
+                          </div>
+                          <span className="text-sm text-secondary">
+                            {
+                              chapter.lessons.filter(
+                                (lesson) => lesson.published === "Published"
+                              ).length
+                            }{" "}
+                            Lessons
+                          </span>
                         </div>
-                        <span className="text-sm text-secondary">
-                          {chapter.lessons.length} Lessons
-                        </span>
-                      </div>
 
-                      {openChapter === chIndex && (
+                        {/* {openChapter === chIndex && (
                         <div className="animate-fadeIn p-5 ">
                           {chapter.lessons.map((lesson, lIndex) => (
                             // <Lesson
@@ -124,9 +131,32 @@ const Details = () => {
                             />
                           ))}
                         </div>
-                      )}
-                    </div>
-                  ))
+                      )} */}
+                        {openChapter === chIndex && (
+                          <div className="animate-fadeIn p-5">
+                            {chapter.lessons
+                              .filter(
+                                (lesson) => lesson.published === "Published"
+                              ) // filter published lessons
+                              .map((lesson, lIndex) => (
+                                <Lesson
+                                  key={lesson._id || lIndex}
+                                  lesson={{
+                                    ...lesson,
+                                    userId: user._id,
+                                    courseId: course._id,
+                                    chapterId: chapter._id,
+                                    course,
+                                  }}
+                                  number={lIndex + 1}
+                                  setPercentage={setPercentage}
+                                  isEnrolled={isEnrolled}
+                                />
+                              ))}
+                          </div>
+                        )}
+                      </div>
+                    ))
                 ) : (
                   <p className="text-secondary">No chapters available.</p>
                 )}

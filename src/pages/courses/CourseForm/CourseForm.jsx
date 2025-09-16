@@ -13,12 +13,15 @@ import {
   deleteLessonAPI,
   updateLessonAPI,
   fetchCourseByIdAPI,
+  publishFullCourse,
 } from "../../../api/courses/courses";
 import FileDropzone from "../Components/FileDropzone";
 import ChapterSection from "./ChapterSection";
 import LessonModal from "./LessonModal";
 import CustomDropdown from "../Components/CustomDropdown";
 import SuccessModal from "../Components/SuccessModal";
+import ErrorModal from "../Components/ErrorModal";
+
 import Testing from "../Testing/Testing";
 import { useLocation } from "react-router-dom";
 import ViewLessonModal from "./ViewLessonModal";
@@ -28,6 +31,8 @@ const CourseForm = () => {
   const location = useLocation();
   const courseId = location.state?.courseId;
 
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
   const [openIndex, setOpenIndex] = useState(0);
   const [tab, setTab] = useState(0);
   const [course, setCourse] = useState({
@@ -45,8 +50,6 @@ const CourseForm = () => {
   const [showLessonModal, setShowLessonModal] = useState(false);
   const [currentChapterTitle, setCurrentChapterTitle] = useState("");
   const [backendcoursedata, setbackendcoursedata] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalMessage, setModalMessage] = useState("");
   const navigate = useNavigate();
   const [viewLesson, setViewLesson] = useState(null);
   const [editingLesson, setEditingLesson] = useState(null);
@@ -85,10 +88,23 @@ const CourseForm = () => {
     }
   }, [courseId]);
 
+  
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+
   const showSuccess = (message) => {
     setModalMessage(message);
     setIsModalOpen(true);
   };
+
+  const [isErrorOpen, setIsErrorOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const showError = (msg) => {
+    setErrorMessage(msg);
+    setIsErrorOpen(true);
+  };
+
   const handleClose = () => {
     setIsModalOpen(false);
   };
@@ -400,6 +416,32 @@ const CourseForm = () => {
   };
 
 
+  
+
+  const handlePublish = async () => {
+    try {
+      setLoading(true);
+      setMessage("");
+      if (!backendcoursedata?._id)
+        return showError("Create Course and then Publish!");
+      const courseId = backendcoursedata._id;
+      console.log(courseId);
+
+      const data = await publishFullCourse(courseId);
+      if (data.success) {
+        showSuccess(data.message || "Course published successfully!");
+      } else {
+        showError(data.message || "Failed to publish course.");
+      }
+    } catch (error) {
+      setMessage("An error occurred while publishing.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+
   return (
     <div className="flex flex-col">
       {/* Top Header */}
@@ -416,6 +458,23 @@ const CourseForm = () => {
         </button>
       </div>
       <div className="bg-gray-100 min-h-screen pt-6 md:pt-10 xl:px-10 ">
+        <div className="max-w-8xl mx-auto px-4 md:px-5 lg:px-10 border-b border-gray-100">
+          <div className="w-full bg-white p-6 md:p-8 rounded-t-xl shadow-sm hover:shadow-md transition-shadow duration-300 flex items-center justify-between">
+            <h1 className="text-2xl font-semibold text-primary">Add Course</h1>
+            <div>
+              <button
+                className="bg-secondary text-white px-6 py-2 rounded-lg hover:bg-primary cursor-pointer transition-colors duration-200"
+                onClick={handlePublish}
+                disabled={loading}
+              >
+                {loading ? "Publishing..." : "Publish Full Course"}
+              </button>
+              {message && (
+                <p className="mt-2 text-sm text-green-600">{message}</p>
+              )}
+            </div>
+          </div>
+        </div>
         <div className="max-w-8xl mx-auto grid grid-cols-1 xl:grid-cols-3 lg:grid-cols-1 md:grid-cols-1 px-4 md:px-5 lg:px-10">
           {/* Left - Tabs and Form */}
           <div className="md:col-span-2 bg-white rounded-b-2xl shadow-sm overflow-hidden ">
@@ -582,7 +641,7 @@ const CourseForm = () => {
           </div>
 
           {/* Right - Preview Panel */}
-          <div className="bg-secondarybgcolor rounded-b-2xl lg:px-9 md:px-9 xl:px-5 px-9 py-4 overflow-y-auto max-h-[80vh] sticky top-16">
+          <div className="bg-white lg:px-9 md:px-9 xl:px-5 px-9 py-4 overflow-y-auto max-h-[100vh] sticky top-16">
             <h2 className="font-semibold text-xl text-primary mb-4">
               Course Preview
             </h2>
@@ -671,6 +730,11 @@ const CourseForm = () => {
         isOpen={isModalOpen}
         message={modalMessage}
         onClose={handleClose}
+      />
+      <ErrorModal
+        isOpen={isErrorOpen}
+        message={errorMessage}
+        onClose={() => setIsErrorOpen(false)}
       />
       {/* <Testing /> */}
     </div>

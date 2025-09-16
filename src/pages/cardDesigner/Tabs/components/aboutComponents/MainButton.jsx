@@ -188,7 +188,7 @@ const MainButton = ({ mainButton, onChange }) => {
       showToast('Main Button Text Required!', "top-center", 5000, "dark");
       return
     }
-    if (!mainButton.buttonInput?.trim() ) {
+    if (!mainButton.buttonInput?.trim()) {
       showToast('Main Button Input Required!', "top-center", 5000, "dark");
       return
     }
@@ -220,7 +220,15 @@ const MainButton = ({ mainButton, onChange }) => {
           </label>
           <select
             value={mainButton.buttonType}
-            onChange={(e) => onChange("buttonType", e.target.value)}
+            onChange={(e) => {
+              const newType = e.target.value;
+              const { text, input } = getButtonConfig(newType);
+
+              // Reset text & input when changing type
+              onChange("buttonType", newType);
+              onChange("buttonText", text);
+              onChange("buttonInput", input);
+            }}
             className="w-full border rounded-lg p-2"
           >
             <option value="call">Call</option>
@@ -228,6 +236,17 @@ const MainButton = ({ mainButton, onChange }) => {
             <option value="link">Link</option>
             <option value="whatsapp">WhatsApp</option>
           </select>
+
+          {/* <select
+            value={mainButton.buttonType}
+            onChange={(e) => onChange("buttonType", e.target.value)}
+            className="w-full border rounded-lg p-2"
+          >
+            <option value="call">Call</option>
+            <option value="email">Email</option>
+            <option value="link">Link</option>
+            <option value="whatsapp">WhatsApp</option>
+          </select> */}
         </div>
 
         {/* Button Text */}
@@ -238,11 +257,7 @@ const MainButton = ({ mainButton, onChange }) => {
           <input
             type="text"
             placeholder={text}
-            value={
-              mainButton.buttonText !== undefined && mainButton.buttonText !== null
-                ? mainButton.buttonText
-                : text
-            }
+            value={mainButton.buttonText ?? text}
             onChange={(e) => onChange("buttonText", e.target.value)}
             className="w-full border rounded-lg p-2 mb-4"
           />
@@ -255,8 +270,8 @@ const MainButton = ({ mainButton, onChange }) => {
       </label>
       <input
         type="text"
-        value={mainButton.buttonInput}
         placeholder={input}
+        value={mainButton.buttonInput ?? input}
         onChange={(e) => onChange("buttonInput", e.target.value)}
         className="w-full border rounded-lg p-2 mb-4"
       />

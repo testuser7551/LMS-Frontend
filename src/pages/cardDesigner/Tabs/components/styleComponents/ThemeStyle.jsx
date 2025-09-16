@@ -1,6 +1,6 @@
 // src/pages/cardDesigner/Tabs/components/styleComponents/ThemeStyle.jsx
 import React, { useState, useEffect } from "react";
-import { saveThemesSection , fetchAllThemes} from "../../../../../api/carddesign/styleSection";
+import { saveThemesSection, fetchAllThemes } from "../../../../../api/carddesign/styleSection";
 import { showToast } from "../../../../../components/toast"
 
 const ThemeStyle = ({ card, onChange }) => {
@@ -12,7 +12,6 @@ const ThemeStyle = ({ card, onChange }) => {
     const fetchThemes = async () => {
       try {
         const res = await fetchAllThemes();
-        console.log(res);
         const themeObj = res.reduce((acc, t) => {
           acc[t.themeName] = {
             _id: t._id,
@@ -36,14 +35,14 @@ const ThemeStyle = ({ card, onChange }) => {
   }, []);
 
   const [selectedTheme, setSelectedTheme] = useState(
-    card?.styles?.themesSection?.themeName || "Custom"
+    card?.style?.themesSection?.themeName || "Custom"
   );
   const [customColors, setCustomColors] = useState({
-    primaryColor: card?.styles?.themesSection?.primaryColor || "#4e4ebc",
-    secondaryColor: card?.styles?.themesSection?.secondaryColor || "#6f6fd1",
-    territoryColor: card?.styles?.themesSection?.territoryColor || "#383896",
-    backgroundColor: card?.styles?.themesSection?.backgroundColor || "#ffffff",
-    textColor: card?.styles?.themesSection?.textColor || "#1a1a1a",
+    primaryColor: card?.style?.themesSection?.primaryColor || "#4e4ebc",
+    secondaryColor: card?.style?.themesSection?.secondaryColor || "#6f6fd1",
+    territoryColor: card?.style?.themesSection?.territoryColor || "#383896",
+    backgroundColor: card?.style?.themesSection?.backgroundColor || "#ffffff",
+    textColor: card?.style?.themesSection?.textColor || "#1a1a1a",
   });
 
   // Handle theme change
@@ -57,58 +56,58 @@ const ThemeStyle = ({ card, onChange }) => {
   };
 
   // inside ThemeStyle component
-// // const handleSave = async () => {
-// //   try {
-// //     const payload =
-// //       selectedTheme === "Custom"
-// //         ? { themeName: "Custom", ...customColors }
-// //         : { themeName: selectedTheme };
+  // // const handleSave = async () => {
+  // //   try {
+  // //     const payload =
+  // //       selectedTheme === "Custom"
+  // //         ? { themeName: "Custom", ...customColors }
+  // //         : { themeName: selectedTheme };
 
-// //     const res = await saveThemesSection(card._id, payload);
-// //     
-// //   } catch (err) {
-// //     //console.error("❌ Error saving theme section:", err);
-// //   }
-// // };
-// const handleSave = async () => {
-//   if (!card?._id) {
-//     //console.error("❌ cardId is missing");
-//     return;
-//   }
+  // //     const res = await saveThemesSection(card._id, payload);
+  // //     
+  // //   } catch (err) {
+  // //     //console.error("❌ Error saving theme section:", err);
+  // //   }
+  // // };
+  // const handleSave = async () => {
+  //   if (!card?._id) {
+  //     //console.error("❌ cardId is missing");
+  //     return;
+  //   }
 
-//   try {
-//     const payload =
-//       selectedTheme === "Custom"
-//         ? { themeName: "Custom", ...customColors }
-//         : { themeName: selectedTheme };
+  //   try {
+  //     const payload =
+  //       selectedTheme === "Custom"
+  //         ? { themeName: "Custom", ...customColors }
+  //         : { themeName: selectedTheme };
 
-//     const res = await saveThemesSection(card._id, payload);
-//     
-//   } catch (err) {
-//     //console.error("❌ Error saving theme section:", err);
-//   }
-// };
+  //     const res = await saveThemesSection(card._id, payload);
+  //     
+  //   } catch (err) {
+  //     //console.error("❌ Error saving theme section:", err);
+  //   }
+  // };
 
-const handleSave = async () => {
-  if (!selectedTheme) return;
+  const handleSave = async () => {
+    if (!selectedTheme) return;
 
-  const themeData = {
-    themeName: selectedTheme,
-    themeId: themes[selectedTheme]?._id || null, // preset theme ID if exists
-    primaryColor: customColors.primaryColor,
-    secondaryColor: customColors.secondaryColor,
-    territoryColor: customColors.territoryColor,
-    backgroundColor: customColors.backgroundColor,
-    textColor: customColors.textColor,
+    const themeData = {
+      themeName: selectedTheme,
+      themeId: themes[selectedTheme]?._id || null, // preset theme ID if exists
+      primaryColor: customColors.primaryColor,
+      secondaryColor: customColors.secondaryColor,
+      territoryColor: customColors.territoryColor,
+      backgroundColor: customColors.backgroundColor,
+      textColor: customColors.textColor,
+    };
+
+    try {
+      const res = await saveThemesSection(themeData);
+      showToast(`✅ Themes saved successfully: ${res?.message || themeData.themeName}`);
+    } catch (err) {
+      //console.error("Error saving themes:", err);
+    }
   };
-
-  try {
-    const res = await saveThemesSection(themeData);
-    showToast(`✅ Themes saved successfully: ${res?.message || themeData.themeName}`);
-  } catch (err) {
-    //console.error("Error saving themes:", err);
-  }
-};
 
 
   // Handle custom color change
@@ -149,10 +148,11 @@ const handleSave = async () => {
               onClick={() => handleThemeSelect(theme)}
               className={`min-w-[120px] cursor-pointer h-36 rounded-2xl border flex flex-col items-center justify-between transition-all duration-300 transform hover:scale-105 hover:shadow-lg`}
               style={{
-                borderColor:
+                borderColor: 
                   selectedTheme === theme
                     ? "var(--color-primary)"
                     : "transparent",
+                borderWidth: selectedTheme === theme ? "3px" : "",
                 backgroundColor:
                   theme === "Custom"
                     ? "#1a1a2e"
@@ -216,57 +216,22 @@ const handleSave = async () => {
 
       {/* Save Button */}
       <div className="flex justify-end">
-        {/* <button
-         onClick={() => {
-          const selectedData =
-            selectedTheme === "Custom"
-              ? { themeName: "Custom", ...customColors }
-              : { themeName: selectedTheme, ...themes[selectedTheme] };
-        
-          // Find the matching theme object from backend response
-          const selectedThemeObj = Object.values(themes).find(
-            (t) => t.themeName === selectedTheme
-          );
-        
-          if (selectedThemeObj) {
-            //console.log("Selected Theme from DB:", selectedThemeObj);
-          } else {
-            //console.log("Custom theme:", selectedData);
-          }
-        
-          onChange("themesSection", selectedData);
-        }}
-        
+        <button
+          onClick={handleSave}
           className="px-6 py-2 rounded-lg font-medium shadow text-white transition font-outfit"
           style={{
             backgroundColor: "var(--color-btn-primary)",
           }}
           onMouseEnter={(e) =>
-            (e.currentTarget.style.backgroundColor =
-              "var(--color-btn-primary-hover)")
+          (e.currentTarget.style.backgroundColor =
+            "var(--color-btn-primary-hover)")
           }
           onMouseLeave={(e) =>
             (e.currentTarget.style.backgroundColor = "var(--color-btn-primary)")
           }
         >
           Save
-        </button> */}
-        <button
-  onClick={handleSave}
-  className="px-6 py-2 rounded-lg font-medium shadow text-white transition font-outfit"
-  style={{
-    backgroundColor: "var(--color-btn-primary)",
-  }}
-  onMouseEnter={(e) =>
-    (e.currentTarget.style.backgroundColor =
-      "var(--color-btn-primary-hover)")
-  }
-  onMouseLeave={(e) =>
-    (e.currentTarget.style.backgroundColor = "var(--color-btn-primary)")
-  }
->
-  Save
-</button>
+        </button>
 
       </div>
     </div>

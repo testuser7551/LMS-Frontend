@@ -42,79 +42,13 @@ const CardDesigner = () => {
     },
   });
 
-  function transformBackendToFrontend(data) {
-    return {
-      id: data._id,
-      about: {
-        basicdetails: {
-          name: data.about.basicdetails.name || "",
-          email: data.about.basicdetails.email || "",
-          mobilenumber: data.about.basicdetails.mobilenumber || "",
-          jobTitle: data.about.basicdetails.jobTitle || "",
-          organization: data.about.basicdetails.organization || "",
-          location: data.about.basicdetails.location || "",
-          cardVisibility: data.about.basicdetails.cardVisibility || false,
-        },
-        mainButton: {
-          buttonType: data.about.mainButton?.buttonType || "call",
-          buttonText: data.about.mainButton?.buttonText || "",
-          buttonInput: data.about.mainButton?.buttonInput || "",
-        },
-        whatsappButton: {
-          whatsappNumber: data.about.whatsappButton?.whatsappNumber || "",
-          message: data.about.whatsappButton?.message || "",
-          isEnabled: data.about.whatsappButton?.isEnabled || false,
-        },
-      },
-      content: {
-        textSection: {
-          heading: data.content.textSection?.heading || "",
-          title: data.content.textSection?.title || "",
-          content: data.content.textSection?.content || "",
-          isEnabled: data.content.textSection?.isEnabled ?? false
-        },
-        linksSection: {
-          isEnabled: data.content.linksSection?.isEnabled ?? false,
-          title: data.content.linksSection?.title || "",
-          link: data.content.linksSection?.link || "",
-        },
-        gallerySections: {
-          isEnabled: data.content.gallerySections?.isEnabled ?? false,
-          imgUrl: data.content.gallerySections?.imgUrl || "",
-        },
-        photoSections: {
-          isEnabled: data.content.photoSections?.isEnabled ?? false,
-          imgUrls: data.content.photoSections?.imgUrls || [],
-          imgUrl: data.content.photoSections?.imgUrl || "",
-        },
-        youtubeSections: {
-          isEnabled: data.content.youtubeSections?.isEnabled ?? false,
-          title: data.content.youtubeSections?.title || "",
-          link: data.content.youtubeSections?.link || "",
-        },
-      },
-
-      style: data.style,
-
-      settings: {
-        public: data.settings.public,
-        removeBranding: data.settings.removeBranding,
-        emailContact: data.settings.emailContact,
-        showSaveContact: data.settings.showSaveContact,
-        enableExchangeContact: data.settings.enableExchangeContact
-      },
-    };
-  }
-
 
   useEffect(() => {
     const fetchCard = async () => {
       try {
         const data = await getCardDesign();
         if (data) {
-          const transformed = transformBackendToFrontend(data);
-          setCard(transformed);
-          console.log(data);
+          setCard(data);
         }
       } catch (err) {
         console.error("Error fetching Card:", err);
@@ -284,7 +218,6 @@ const CardDesigner = () => {
                 </div>
               </div>
             </div>
-
           </div>
         </div>
       </div>

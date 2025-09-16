@@ -11,6 +11,15 @@ export const getCardDesign = async () => {
   }
 };
 
+export const getCardDesignWithId = async (id) => {
+  try {
+    const response = await api.get(`/api/card-design/${id}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const getAllCardDesign = async () => {
   try {
     const response = await api.get(`/api/all-card-design`);

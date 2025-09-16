@@ -7,7 +7,7 @@ import DashboardLayout from "./pages/dashboard/DashboardLayout";
 import DiscussionPage from "./pages/discussions/DiscussionPage";
 import { AuthContext } from "./context/AuthContext";
 import React, {useContext} from "react";
-
+import MyCard from "./pages/cardDesigner/MyCard";
 // Pages
 import AdminDashboard from "./pages/dashboard/AdminDashboard";
 import StudentDashboard from "./pages/dashboard/StudentDashboard";
@@ -61,6 +61,7 @@ function App() {
           <Route path="editcard" element={<CardDesigner />} />
           <Route path="admincard" element={<AdminCard />} />
           <Route path="qrcode" element={<QrCode />} />
+          <Route path="studentcard" element ={<MyCard  />} />
           <Route path="discussions" element={<DiscussionPage />} />
 
           {/* Catch-all */}

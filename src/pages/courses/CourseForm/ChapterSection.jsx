@@ -160,7 +160,7 @@ const ChapterSection = ({
         </div>
       )}
 
-      <div className="mt-4">
+      <div className="mt-4 pb-10">
         {chapters.length > 0 ? (
           chapters.map((chapter, index) => (
             <div

@@ -176,3 +176,21 @@ export const deleteLessonAPI = async (courseId, chapterId, lessonId) => {
         throw error;
     }
 };
+
+
+
+// Publish the entire course by ID
+export const publishFullCourse = async (courseId) => {
+    try {
+        const response = await api.put(`${BASE_URL}/${courseId}/publish`);
+        return response.data;
+    } catch (error) {
+        if (error.response && error.response.data) {
+            // Backend sent a structured error message
+            return error.response.data;
+        } else {
+            // Network or other error
+            return { success: false, message: error.message || "Something went wrong" };
+        }
+    }
+};

@@ -79,14 +79,14 @@ function ContentSection({ card, onCardChange }) {
           {activeSection === 'first' && (
             sectionTypes.map((section) => {
               switch (section.type) {
-                // case "links":
-                //   return (
-                //     <LinkSection
-                //       key={section.type}
-                //       linkSection={card.content.linksSection}
-                //       onChange={(field, value) => updateField("linksSection", field, value)}
-                //     />
-                //   );
+                case "links":
+                  return (
+                    <LinkSection
+                      key={section.type}
+                      linkSection={card.content.linksSection}
+                      onChange={(field, value) => updateField("linksSection", field, value)}
+                    />
+                  );
                 case "text":
                   return (
                     <TextSection
@@ -113,23 +113,23 @@ function ContentSection({ card, onCardChange }) {
                   );
                 case "photos":
                   return (
-                    // <PhotosSection
-                    //   key={section.type}
-                    //   photoSection={card.content.photoSections}
-                    //   onChange={(field, value) => updateField("photoSections", field, value)}
-                    // />
                     <PhotosSection
                       key={section.type}
-                      section={{
-                        id: "photoSection",
-                        data: card.content.photoSections,
-                        enabled: card.content.photoSections?.isEnabled ?? true,
-                      }}
-                      onUpdate={(id, updatedData) => updateField("photoSections", null, updatedData)}
-                      onToggle={(id, enabled) =>
-                        updateField("photoSections", "isEnabled", enabled)
-                      }
+                      photoSection={card.content.photoSections}
+                      onChange={(field, value) => updateField("photoSections", field, value)}
                     />
+                    // <PhotosSection
+                    //   key={section.type}
+                    //   section={{
+                    //     id: "photoSection",
+                    //     data: card.content.photoSections,
+                    //     enabled: card.content.photoSections?.isEnabled ?? true,
+                    //   }}
+                    //   onUpdate={(id, updatedData) => updateField("photoSections", null, updatedData)}
+                    //   onToggle={(id, enabled) =>
+                    //     updateField("photoSections", "isEnabled", enabled)
+                    //   }
+                    // />
 
                   );
                 default:

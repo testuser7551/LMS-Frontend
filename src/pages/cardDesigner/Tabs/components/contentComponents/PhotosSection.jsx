@@ -1,132 +1,143 @@
 
-// // import React, { useState } from "react";
-// // import { X } from "lucide-react";
-// // import FileDropzone from "../../../../courses/FileDropzone";
 
-// // const PhotosSection = ({ section, onUpdate, onDelete, onToggle }) => {
-// //   const [localData, setLocalData] = useState(section.data);
-
-// //   const handleChange = (photos) => {
-// //     const updated = { ...localData, photos };
-// //     setLocalData(updated);
-// //     onUpdate(section.id, updated);
-// //   };
-
-// //   // ✅ Handle multiple files at once
-// //   const handleAddPhotos = (files) => {
-// //     const urls = Array.from(files).map((file) => URL.createObjectURL(file));
-// //     handleChange([...(localData.photos || []), ...urls]);
-// //   };
-
-// //   const handleSave = () => {
-// //     //console.log("Saved Photos Section:", JSON.stringify(localData, null, 2));
-// //   };
-
-// //   return (
-// //     <div className="bg-white rounded-lg p-4 shadow-sm mt-4">
-// //       {/* Header */}
-// //       <div className="flex justify-between items-center mb-3">
-// //         <h3 className="text-lg font-semibold text-[var(--color-headtext)] mb-6 font-outfit">
-// //           Photos Section
-// //         </h3>
-// //         <div className="flex items-center gap-3">
-// //           {/* Enable/Disable Toggle */}
-// //           <label className="flex items-center cursor-pointer">
-// //             <input
-// //               type="checkbox"
-// //               checked={section.enabled}
-// //               onChange={() => onToggle(section.id)}
-// //               className="sr-only"
-// //             />
-// //             <span
-// //               className={`w-10 h-5 flex items-center rounded-full p-1 duration-300 ease-in-out ${
-// //                 section.enabled ? "bg-[#4e4ebc]" : "bg-[#b8b8e9]"
-// //               }`}
-// //             >
-// //               <span
-// //                 className={`bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out ${
-// //                   section.enabled ? "translate-x-5" : ""
-// //                 }`}
-// //               />
-// //             </span>
-// //           </label>
-// //         </div>
-// //       </div>
-
-// //       {/* Fields */}
-// //       <div className="space-y-3">
-// //         {/* ✅ FileDropzone now in multiple mode */}
-// //         <FileDropzone
-// //           file={null}
-// //           multiple={true} // enable multiple select
-// //           setFile={handleAddPhotos} // now works with bulk files
-// //           accept="image/*"
-// //         />
-
-// //         {/* Photos Grid */}
-// //         <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
-// //           {(localData.photos || []).map((photo, i) => (
-// //             <div key={i} className="relative">
-// //               <img
-// //                 src={photo}
-// //                 alt={`Photo ${i}`}
-// //                 className="w-32 h-32 object-cover rounded border"
-// //               />
-// //               <button
-// //                 onClick={() => {
-// //                   const updated = localData.photos.filter((_, idx) => idx !== i);
-// //                   handleChange(updated);
-// //                 }}
-// //                 className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full"
-// //               >
-// //                 <X className="w-4 h-4" />
-// //               </button>
-// //             </div>
-// //           ))}
-// //         </div>
-
-// //         {/* Save button */}
-// //         <div className="flex justify-end mt-3">
-// //           <button
-// //             onClick={handleSave}
-// //             className="bg-[#4e4ebc] hover:bg-[#6f6fd1] text-white px-4 py-2 rounded-lg cursor-pointer"
-// //           >
-// //             Save
-// //           </button>
-// //         </div>
-// //       </div>
-// //     </div>
-// //   );
-// // };
-
-// // export  {PhotosSection};
 
 
 
 // import React, { useState } from "react";
 // import { X } from "lucide-react";
-// import FileDropzone from "../../../../courses/FileDropzone";
+// import FileDropzone from "../../../components/FileDropzone";
+// import { savePhotoSectionAPI, deletePhotoAPI } from "../../../../../api/carddesign/contentSection";
+// // import { savePhotoSectionAPI, deletePhotoAPI } from "../../../../../api/photoSection";
 
-// const PhotosSection = ({ section, onUpdate, onDelete, onToggle }) => {
-//   const [localData, setLocalData] = useState(section.data);
+// const PhotosSection = ({ section, onUpdate, onToggle }) => {
+//   const [localData, setLocalData] = useState(section.data || { photos: [], isEnabled: true });
+//   const [previewPhotos, setPreviewPhotos] = useState([]); // 🔹 separate local previews
 
+//   const [uploading, setUploading] = useState(false);
+//   const [selectedFiles, setSelectedFiles] = useState([]);
+//   const API_BASE = import.meta.env.VITE_API_BASE; // or your backend URL
+
+//   // ✅ Update parent state
 //   const handleChange = (photos) => {
 //     const updated = { ...localData, photos };
 //     setLocalData(updated);
 //     onUpdate(section.id, updated);
 //   };
 
-//   // ✅ Handle multiple files at once
-//   const handleAddPhotos = (files) => {
-//     const urls = Array.from(files).map((file) => URL.createObjectURL(file));
-//     handleChange([...(localData.photos || []), ...urls]);
-//   };
+//   // ✅ Add new photos (preview before save)
+//   // const handleAddPhotos = (files) => {
+//   //   const fileArray = Array.from(files);
+//   //   const urls = fileArray.map((file) => URL.createObjectURL(file));
 
-//   const handleSave = () => {
+//   //   // Store files for backend upload
+//   //   setSelectedFiles((prev) => [...prev, ...fileArray]);
+
+//   //   // Store preview URLs for UI
+//   //   handleChange([...(localData.photos || []), ...urls]);
+//   // };
+//   const handleAddPhotos = (files) => {
+//     const fileArray = Array.from(files);
+//     const urls = fileArray.map((file) => URL.createObjectURL(file));
+  
+//     // store files for backend upload
+//     setSelectedFiles((prev) => [...prev, ...fileArray]);
+  
+//     // store only previews separately
+//     setPreviewPhotos((prev) => [...prev, ...urls]);
 //   };
+  
+
+//   // ✅ Save to backend
+//   // const handleSave = async () => {
+//   //   if (selectedFiles.length === 0) {
+//   //     alert("Please add at least one photo before saving!");
+//   //     return;
+//   //   }
+
+//   //   try {
+//   //     setUploading(true);
+
+//   //     const formData = new FormData();
+//   //     selectedFiles.forEach((file) => formData.append("photos", file)); // must match multer field name
+//   //     formData.append("isEnabled", localData.isEnabled);
+
+//   //     const result = await savePhotoSectionAPI(formData);
+
+//   //     console.log("Photos Section Saved:", result);
+
+//   //     // ✅ Replace previews with backend URLs
+//   //     handleChange(result.photoSection.imgUrls);
+
+//   //     // ✅ Clear local file queue
+//   //     setSelectedFiles([]);
+//   //     alert("Photos saved successfully!");
+//   //   } catch (err) {
+//   //     console.error("Photos save failed:", err);
+//   //     alert("Failed to save photos");
+//   //   } finally {
+//   //     setUploading(false);
+//   //   }
+//   // };
+
+//   const handleSave = async () => {
+//     if (selectedFiles.length === 0) {
+//       alert('Please add at least one photo before saving!', "top-center", 5000, "dark");
+//       return;
+//     }
+  
+//     try {
+//       setUploading(true);
+//       const formData = new FormData();
+//       selectedFiles.forEach((file) => formData.append("photos", file));
+//       formData.append("isEnabled", localData.isEnabled);
+  
+//       const result = await savePhotoSectionAPI(formData);
+  
+//       // ✅ only backend URLs go into localData
+//       setLocalData({ ...localData, imgUrls: result.photoSection.imgUrls });
+  
+//       // clear previews + queue
+//       setPreviewPhotos([]);
+//       setSelectedFiles([]);
+  
+//       alert('Photos saved successfully!', "top-center", 5000, "dark");
+//     } catch (err) {
+//       console.error("Photos save failed:", err);
+//       alert('Failed to save photos', "top-center", 5000, "dark");
+//     } finally {
+//       setUploading(false);
+//     }
+//   };
+  
+
+//   // ✅ Delete photo (local + backend)
+//   // const handleDelete = async (photoUrl, index) => {
+//   //   try {
+//   //     await deletePhotoAPI(index);
+//   //     const updated = localData.photos.filter((_, idx) => idx !== index);
+//   //     handleChange(updated);
+//   //   } catch (err) {
+//   //     console.error("Delete photo failed:", err);
+//   //     alert("Failed to delete photo");
+//   //   }
+//   // };
+//   const handleDelete = async (photoUrl, index) => {
+//     try {
+//       const filename = photoUrl.split("/").pop(); // extract just the filename
+//       await deletePhotoAPI(filename);
+  
+//       const updated = (localData.imgUrls || []).filter((_, idx) => idx !== index);
+//       setLocalData({ ...localData, imgUrls: updated });
+//     } catch (err) {
+//       console.error("Delete photo failed:", err);
+//       alert("Failed to delete photo");
+//     }
+//   };
+//   console.log("section",section)
+  
 
 //   return (
-//     <div className="bg-[var(--color-bgcolor)] rounded-lg p-4 shadow-sm mt-4 border border-[var(--color-secondarybgcolor)]">
+//     <div className="bg-[var(--color-bgcolor)] rounded-lg p-4 mt-4 shadow border border-[var(--color-secondarybgcolor)]">
 //       {/* Header */}
 //       <div className="flex justify-between items-center mb-3">
 //         <h3 className="text-lg font-semibold text-[var(--color-headtext)] mb-6 font-outfit">
@@ -137,20 +148,24 @@
 //           <label className="flex items-center cursor-pointer">
 //             <input
 //               type="checkbox"
-//               checked={section.enabled}
-//               onChange={() => onToggle(section.id)}
+//               checked={localData.isEnabled}
+//               onChange={(e) => {
+//                 const updated = { ...localData, isEnabled: e.target.checked };
+//                 setLocalData(updated);
+//                 onToggle(section.id, e.target.checked);
+//               }}
 //               className="sr-only"
 //             />
 //             <span
 //               className={`w-10 h-5 flex items-center rounded-full p-1 duration-300 ease-in-out ${
-//                 section.enabled
-//                   ? "bg-[var(--color-primary)]"
-//                   : "bg-[var(--color-secondarybgcolor)]"
+//                 localData.isEnabled
+//                   ? "bg-[var(--color-btn-primary)]"
+//                   : "bg-[var(--color-btn-secondary)]"
 //               }`}
 //             >
 //               <span
 //                 className={`bg-[var(--color-bgcolor)] w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out ${
-//                   section.enabled ? "translate-x-5" : ""
+//                   localData.isEnabled ? "translate-x-5" : ""
 //                 }`}
 //               />
 //             </span>
@@ -158,18 +173,17 @@
 //         </div>
 //       </div>
 
-//       {/* Fields */}
+//       {/* File Upload */}
 //       <div className="space-y-3">
-//         {/* ✅ FileDropzone now in multiple mode */}
 //         <FileDropzone
 //           file={null}
-//           multiple={true} // enable multiple select
-//           setFile={handleAddPhotos} // now works with bulk files
+//           multiple={true}
+//           setFile={handleAddPhotos}
 //           accept="image/*"
 //         />
 
 //         {/* Photos Grid */}
-//         <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+//         {/* <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
 //           {(localData.photos || []).map((photo, i) => (
 //             <div key={i} className="relative">
 //               <img
@@ -177,26 +191,65 @@
 //                 alt={`Photo ${i}`}
 //                 className="w-32 h-32 object-cover rounded border border-[var(--color-secondarybgcolor)]"
 //               />
-//               {/* <button
-//                 onClick={() => {
-//                   const updated = localData.photos.filter((_, idx) => idx !== i);
-//                   handleChange(updated);
-//                 }}
+//               <button
+//                 onClick={() => handleDelete(photo, i)}
 //                 className="absolute top-1 right-1 bg-[var(--color-danger)] text-[var(--color-bgcolor)] p-1 rounded-full"
 //               >
 //                 <X className="w-4 h-4" />
-//               </button> */}
+//               </button>
+
+              
 //             </div>
 //           ))}
-//         </div>
+//         </div> */}
+
+//         {/* Show saved images */}
+
+//         <div className="mt-2 grid grid-cols-2 md:grid-cols-3 gap-4">
+//   {/* saved photos */}
+//   {(localData.imgUrls || []).map((photo, i) => {
+//     const fullUrl = photo.startsWith("http") ? photo : `${API_BASE}${photo}`;
+//     return (
+//       <div key={`saved-${i}`} className="relative">
+//         <img src={fullUrl} alt={`Saved ${i}`} className="w-32 h-32 object-cover rounded" />
+//         <button onClick={() => handleDelete(photo, i)} className="absolute top-1 right-1">
+//           <X className="w-4 h-4" />
+//         </button>
+//       </div>
+//     );
+//   })}
+
+//   {/* preview photos */}
+//   {previewPhotos.map((preview, i) => (
+//     <div key={`preview-${i}`} className="relative">
+//       <img src={preview} alt={`Preview ${i}`} className="w-32 h-32 object-cover rounded" />
+//       <button
+//         onClick={() => {
+//           const updated = previewPhotos.filter((_, idx) => idx !== i);
+//           setPreviewPhotos(updated);
+//           setSelectedFiles(selectedFiles.filter((_, idx) => idx !== i));
+//         }}
+//         className="absolute top-1 right-1"
+//       >
+//         <X className="w-4 h-4" />
+//       </button>
+//     </div>
+//   ))}
+// </div>
+
+
+
 
 //         {/* Save button */}
 //         <div className="flex justify-end mt-3">
 //           <button
 //             onClick={handleSave}
-//             className="bg-[var(--color-btn-primary)] hover:bg-[var(--color-btn-primary-hover)] text-[var(--color-bgcolor)] px-4 py-2 rounded-lg cursor-pointer"
+//             disabled={uploading}
+//             className={`bg-[var(--color-btn-primary)] hover:bg-[var(--color-btn-primary-hover)] text-[var(--color-bgcolor)] px-4 py-2 rounded-lg cursor-pointer ${
+//               uploading ? "opacity-50 cursor-not-allowed" : ""
+//             }`}
 //           >
-//             Save
+//             {uploading ? "Saving..." : "Save"}
 //           </button>
 //         </div>
 //       </div>
@@ -207,45 +260,37 @@
 // export { PhotosSection };
 
 
-//NEW SECTION SIVA
-
-
-
 import React, { useState } from "react";
 import { X } from "lucide-react";
 import FileDropzone from "../../../components/FileDropzone";
 import { savePhotoSectionAPI, deletePhotoAPI } from "../../../../../api/carddesign/contentSection";
-import { showToast } from "../../../../../components/toast.js";
 
-
-const PhotosSection = ({ section, onUpdate, onToggle }) => {
-  const [localData, setLocalData] = useState(section.data || { photos: [], isEnabled: true });
+const PhotosSection = ({ photoSection, onChange }) => {
+  const [localData, setLocalData] = useState(
+    photoSection || { imgUrls: [], photos: [], isEnabled: true }
+  );
+  const [selectedFiles, setSelectedFiles] = useState([]); // real File objects
   const [uploading, setUploading] = useState(false);
-  const [selectedFiles, setSelectedFiles] = useState([]);
+  const API_BASE = import.meta.env.VITE_API_BASE;
 
-  // ✅ Update parent state
-  const handleChange = (photos) => {
-    const updated = { ...localData, photos };
-    setLocalData(updated);
-    onUpdate(section.id, updated);
-  };
-
-  // ✅ Add new photos (preview before save)
+  // ✅ Add new photos
   const handleAddPhotos = (files) => {
     const fileArray = Array.from(files);
-    const urls = fileArray.map((file) => URL.createObjectURL(file));
+    const blobs = fileArray.map((file) => URL.createObjectURL(file));
 
-    // Store files for backend upload
+    const updated = {
+      ...localData,
+      photos: [...(localData.photos || []), ...blobs],
+    };
+    setLocalData(updated);
     setSelectedFiles((prev) => [...prev, ...fileArray]);
-
-    // Store preview URLs for UI
-    handleChange([...(localData.photos || []), ...urls]);
+    onChange("photos", updated.photos);
   };
 
   // ✅ Save to backend
   const handleSave = async () => {
     if (selectedFiles.length === 0) {
-      showToast('Please add at least one photo before saving!', "top-center", 5000, "dark");
+      alert("Please add at least one photo before saving!");
       return;
     }
 
@@ -253,49 +298,59 @@ const PhotosSection = ({ section, onUpdate, onToggle }) => {
       setUploading(true);
 
       const formData = new FormData();
-      selectedFiles.forEach((file) => formData.append("photos", file)); // must match multer field name
+      selectedFiles.forEach((file) => formData.append("photos", file));
       formData.append("isEnabled", localData.isEnabled);
 
       const result = await savePhotoSectionAPI(formData);
 
-      // ✅ Replace previews with backend URLs
-      handleChange(result.photoSection.imgUrls);
+      // const updated = {
+      //   ...localData,
+      //   imgUrls: result.photoSection.imgUrls, // backend URLs
+      //   photos: [], // clear previews
+      // };
 
-      // ✅ Clear local file queue
+      // setLocalData(updated);
       setSelectedFiles([]);
-      showToast('Photos saved successfully!', "top-center", 5000, "dark");
+      // onChange( "photos", updated.photos);
+      // onChange("imgUrls", updated.imgUrls);
+      alert("Photos uploaded");
     } catch (err) {
       console.error("Photos save failed:", err);
-      showToast('Failed to save photos', "top-center", 5000, "dark");
+      alert("Failed to save photos");
     } finally {
       setUploading(false);
     }
   };
 
-  // ✅ Delete photo (local + backend)
-  // const handleDelete = async (photoUrl, index) => {
-  //   try {
-  //     await deletePhotoAPI(index);
-  //     const updated = localData.photos.filter((_, idx) => idx !== index);
-  //     handleChange(updated);
-  //   } catch (err) {
-  //     console.error("Delete photo failed:", err);
-  //     showToast('Failed to delete photos', "top-center", 5000, "dark");
-  //   }
-  // };
-  const handleDelete = async (photoUrl, index) => {
+  // ✅ Delete photo
+  const handleDelete = async (photoUrl, index, isBlob = false) => {
+    if (isBlob) {
+      // remove preview before saving
+      const updatedPhotos = localData.photos.filter((_, i) => i !== index);
+      setLocalData({ ...localData, photos: updatedPhotos });
+      setSelectedFiles(selectedFiles.filter((_, i) => i !== index));
+      onChange("photos", updatedPhotos);
+      alert("Photos deleted");
+
+      return;
+    }
+
     try {
-      const filename = photoUrl.split("/").pop(); // extract just the filename
+      const filename = photoUrl.split("/").pop();
       await deletePhotoAPI(filename);
-  
-      const updated = (localData.imgUrls || []).filter((_, idx) => idx !== index);
-      setLocalData({ ...localData, imgUrls: updated });
+
+      const updatedUrls = localData.imgUrls.filter((_, i) => i !== index);
+      const updated = { ...localData, imgUrls: updatedUrls };
+      setLocalData(updated);
+      onChange("imgUrls", updatedUrls);
+      alert("Photos deleted");
+
     } catch (err) {
       console.error("Delete photo failed:", err);
-      showToast('Failed to delete photos', "top-center", 5000, "dark");
+      alert("Failed to delete photo");
     }
   };
-
+  console.log(photoSection)
   return (
     <div className="bg-[var(--color-bgcolor)] rounded-lg p-4 mt-4 shadow border border-[var(--color-secondarybgcolor)]">
       {/* Header */}
@@ -303,131 +358,97 @@ const PhotosSection = ({ section, onUpdate, onToggle }) => {
         <h3 className="text-lg font-semibold text-[var(--color-headtext)] mb-6 font-outfit">
           Photos Section
         </h3>
-        <div className="flex items-center gap-3">
-          {/* Enable/Disable Toggle */}
-          <label className="flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              checked={localData.isEnabled}
-              onChange={(e) => {
-                const updated = { ...localData, isEnabled: e.target.checked };
-                setLocalData(updated);
-                onToggle(section.id, e.target.checked);
-              }}
-              className="sr-only"
-            />
+        {/* Toggle */}
+        <label className="flex items-center cursor-pointer">
+          <input
+            type="checkbox"
+            checked={localData.isEnabled}
+            onChange={(e) => {
+              const updated = { ...localData, isEnabled: e.target.checked };
+              setLocalData(updated);
+              onChange("isEnabled", e.target.checked);
+            }}
+            className="sr-only"
+          />
+          <span
+            className={`w-10 h-5 flex items-center rounded-full p-1 duration-300 ease-in-out ${
+              localData.isEnabled
+                ? "bg-[var(--color-btn-primary)]"
+                : "bg-[var(--color-btn-secondary)]"
+            }`}
+          >
             <span
-              className={`w-10 h-5 flex items-center rounded-full p-1 duration-300 ease-in-out ${
-                localData.isEnabled
-                  ? "bg-[var(--color-btn-primary)]"
-                  : "bg-[var(--color-btn-secondary)]"
+              className={`bg-[var(--color-bgcolor)] w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out ${
+                localData.isEnabled ? "translate-x-5" : ""
               }`}
-            >
-              <span
-                className={`bg-[var(--color-bgcolor)] w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out ${
-                  localData.isEnabled ? "translate-x-5" : ""
-                }`}
-              />
-            </span>
-          </label>
-        </div>
+            />
+          </span>
+        </label>
       </div>
 
-      {/* File Upload */}
-      <div className="space-y-3">
-        <FileDropzone
-          file={null}
-          multiple={true}
-          setFile={handleAddPhotos}
-          accept="image/*"
-        />
+      {/* Upload */}
+      <FileDropzone
+        file={null}
+        multiple={true}
+        setFile={handleAddPhotos}
+        accept="image/*"
+      />
 
-        {/* Photos Grid */}
-        {/* <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
-          {(localData.photos || []).map((photo, i) => (
-            <div key={i} className="relative">
+      {/* Saved + Preview Photos */}
+      <div className="mt-2 grid grid-cols-2 md:grid-cols-3 gap-4">
+        {/* saved photos */}
+        {(localData.imgUrls || []).map((photo, i) => {
+          const fullUrl = photo.startsWith("http") ? photo : `${API_BASE}${photo}`;
+          return (
+            <div key={`saved-${i}`} className="relative">
               <img
-                src={photo}
-                alt={`Photo ${i}`}
-                className="w-32 h-32 object-cover rounded border border-[var(--color-secondarybgcolor)]"
+                src={fullUrl}
+                alt={`Saved ${i}`}
+                className="w-32 h-32 object-cover rounded"
               />
               <button
-                onClick={() => handleDelete(photo, i)}
+                onClick={() => handleDelete(photo, i, false)}
                 className="absolute top-1 right-1 bg-[var(--color-danger)] text-[var(--color-bgcolor)] p-1 rounded-full"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
-          ))}
-        </div> */}
-        <div className="mt-2 grid grid-cols-2 md:grid-cols-3 gap-4">
-  {(localData.imgUrls || []).map((photo, i) => {
-    const fullUrl = photo.startsWith("http") ? photo : `${API_BASE}${photo}`;
-    return (
-      <div key={`saved-${i}`} className="relative flex flex-col items-center bg-[var(--color-secondarybgcolor)] p-2 rounded">
-        <img
-          src={fullUrl}
-          alt={`Saved Photo ${i}`}
-          className="w-32 h-32 object-cover rounded border border-[var(--color-secondarybgcolor)]"
-        />
-        <a
-          href={fullUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-2 text-xs text-[var(--color-btn-primary)] underline break-all text-center"
-        >
-          {photo.split("/").pop()}
-        </a>
-        <button
-          onClick={() => handleDelete(photo, i)}
-          className="absolute top-1 right-1 bg-[var(--color-danger)] text-[var(--color-bgcolor)] p-1 rounded-full"
-        >
-          <X className="w-4 h-4" />
-        </button>
+          );
+        })}
+
+        {/* preview photos */}
+        {(localData.photos || []).map((preview, i) => (
+          <div key={`preview-${i}`} className="relative">
+            <img
+              src={preview}
+              alt={`Preview ${i}`}
+              className="w-32 h-32 object-cover rounded"
+            />
+            <button
+              onClick={() => handleDelete(preview, i, true)}
+              className="absolute top-1 right-1 bg-[var(--color-danger)] text-[var(--color-bgcolor)] p-1 rounded-full"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        ))}
       </div>
-    );
-  })}
 
-  {/* Show unsaved previews */}
-  {(localData.photos || []).map((preview, i) => (
-    <div key={`preview-${i}`} className="relative flex flex-col items-center bg-[var(--color-secondarybgcolor)] p-2 rounded">
-      <img
-        src={preview}
-        alt={`Preview ${i}`}
-        className="w-32 h-32 object-cover rounded border border-[var(--color-secondarybgcolor)]"
-      />
-      <p className="mt-2 text-xs text-[var(--color-subtext)] break-all text-center">
-        {preview.split("/").pop() || "New Image"}
-      </p>
-      <button
-        onClick={() => {
-          // remove only from local previews
-          const updated = localData.photos.filter((_, idx) => idx !== i);
-          setLocalData({ ...localData, photos: updated });
-        }}
-        className="absolute top-1 right-1 bg-[var(--color-danger)] text-[var(--color-bgcolor)] p-1 rounded-full"
-      >
-        <X className="w-4 h-4" />
-      </button>
-    </div>
-  ))}
-</div>
-
-        {/* Save button */}
-        <div className="flex justify-end mt-3">
-          <button
-            onClick={handleSave}
-            disabled={uploading}
-            className={`bg-[var(--color-btn-primary)] hover:bg-[var(--color-btn-primary-hover)] text-[var(--color-bgcolor)] px-4 py-2 rounded-lg cursor-pointer ${
-              uploading ? "opacity-50 cursor-not-allowed" : ""
-            }`}
-          >
-            {uploading ? "Saving..." : "Save"}
-          </button>
-        </div>
+      {/* Save */}
+      <div className="flex justify-end mt-3">
+        <button
+          onClick={handleSave}
+          disabled={uploading}
+          className={`bg-[var(--color-btn-primary)] hover:bg-[var(--color-btn-primary-hover)] text-[var(--color-bgcolor)] px-4 py-2 rounded-lg cursor-pointer ${
+            uploading ? "opacity-50 cursor-not-allowed" : ""
+          }`}
+        >
+          {uploading ? "Saving..." : "Save"}
+        </button>
       </div>
     </div>
   );
 };
 
 export { PhotosSection };
+

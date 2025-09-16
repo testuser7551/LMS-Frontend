@@ -4,28 +4,25 @@ import { FaWhatsapp } from "react-icons/fa"; // 👈 make sure react-icons insta
 import { ShareModal } from "./components/ShareModal"
 
 const API_BASE = import.meta.env.VITE_API_BASE;
-const extractYouTubeID = (url) => {
 
-  try {
-    const parsedUrl = new URL(url);
-    if (parsedUrl.hostname === "youtu.be") {
-      return parsedUrl.pathname.slice(1);
-    }
-    if (parsedUrl.searchParams.has("v")) {
-      return parsedUrl.searchParams.get("v");
-    }
-    if (parsedUrl.pathname.startsWith("/embed/")) {
-      return parsedUrl.pathname.split("/embed/")[1];
-    }
-    return null;
-  } catch {
-    return null;
+const getYoutubeEmbedUrl = (url) => {
+  if (!url) return "";
+  const urlObj = new URL(url);
+  // case 1: normal watch link
+  if (urlObj.hostname.includes("youtube.com") && urlObj.searchParams.get("v")) {
+    return `https://www.youtube.com/embed/${urlObj.searchParams.get("v")}`;
   }
+  // case 2: short youtu.be link
+  if (urlObj.hostname.includes("youtu.be")) {
+    return `https://www.youtube.com/embed${urlObj.pathname}`;
+  }
+  return url; // fallback (already an embed link)
 };
 
-const CardPreview = ({ card, previewMode = "desktop" }) => {
+const CardPreview = ({ card }) => {
   const [isOpen, setIsOpen] = useState(false);
   const profile = card?.style?.profileSection || {};
+  const previewMode = "desktop" || "";
 
   // set banner once
   const banner = card?.style?.bannerImgUrl || "";
@@ -35,7 +32,9 @@ const CardPreview = ({ card, previewMode = "desktop" }) => {
       card?.style?.themesSection?.backgroundColor || "#FFFFFF",
     textColor: card?.style?.themesSection?.textColor || "#111827",
     primaryColor: card?.style?.themesSection?.primaryColor || "#6B7280",
-    fontFamily: card?.style?.fontFamily || "Inter, sans-serif",
+    secondaryColor: card?.style?.themesSection?.secondaryColor || "#6B7280",
+    territoryColor: card?.style?.themesSection?.territoryColor || "#6B7280",
+    fontFamily: card?.style?.fontStyleSection?.font || "Inter, sans-serif",
   };
 
   // ✅ Photos
@@ -56,9 +55,8 @@ const CardPreview = ({ card, previewMode = "desktop" }) => {
       </div>
 
       <div className="py-4 flex justify-center">
-        {previewMode === "desktop" && (
           <div
-            className="h-[600px] w-[300px] overflow-y-auto p-2 rounded-2xl border-6 border-y-12 transition shadow-[0_10px_20px_0px_rgba(0,0,0,0.3)] duration-300 flex flex-col"
+            className="h-[600px] w-[300px] overflow-y-auto rounded-2xl border-6 border-y-12 transition shadow-[0_10px_20px_0px_rgba(0,0,0,0.3)] duration-300 flex flex-col"
             style={{
               backgroundColor: theme.backgroundColor,
               color: theme.textColor,
@@ -67,20 +65,31 @@ const CardPreview = ({ card, previewMode = "desktop" }) => {
             }}
           >
             {/* ✅ Banner Preview */}
-            {card?.style?.bannerImgUrl && (<div className="w-full h-32 sm:h-40 md:h-48">
-              <img
-                src={card?.style?.bannerImgUrl}
-                alt="Banner"
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  e.target.src = "/assets/images/courses/2.jpg";
-                }}
-              />
-            </div>)}
+            {card?.style?.bannerImgUrl && card?.style?.bannerImgUrl !== "" && (
+              <div className="w-full h-32 sm:h-40 md:h-48">
+                <img
+                  src={
+                    card?.style?.bannerImgUrl.startsWith("blob:")
+                      ? card?.style?.bannerImgUrl
+                      : `${API_BASE}${card?.style?.bannerImgUrl}`
+                  }
+                  alt="Banner"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+            {!card?.style?.bannerImgUrl && (
+              <div className="w-full h-32 sm:h-40 md:h-48"
+                style={{
+                  backgroundColor: card?.style?.themesSection?.territoryColor,
+                }}>
+                <div className="h-32 sm:h-40 md:h-48"></div>
+              </div>
+            )}
 
             {/* ✅ Profile Section ${card?.style?.headerStyleSection?.headerStyle}*/}
             <div
-              className={`flex gap-3 px-4 pb-4 mt-5 ${card?.style?.headerStyleSection?.headerStyle === "right"
+              className={`flex gap-3 px-4 pb-4 -mt-10 ${card?.style?.headerStyleSection?.headerStyle === "right"
                 ? "justify-end"
                 : card?.style?.headerStyleSection?.headerStyle === "left"
                   ? "justify-start"
@@ -95,17 +104,27 @@ const CardPreview = ({ card, previewMode = "desktop" }) => {
                     } ${profile.profileRingOnPhoto ? "ring-2 ring-blue-500" : ""
                     }`}
                 >
-                  {profile.profileImgUrl ? (
+                  {profile?.profileImgUrl ? (
                     <img
-                      src={profile.profileImgUrl}
+                      src={
+                        profile.profileImgUrl.startsWith("blob:")
+                          ? profile.profileImgUrl
+                          : `${API_BASE}${profile.profileImgUrl}`
+                      }
                       alt="Profile"
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src = "/assets/images/default-profile.jpg"; // fallback image
+                      }}
                     />
                   ) : (
-                    <span className="text-lg font-medium text-gray-500">
-                      JPG
-                    </span>
+                    <img
+                    src={"/assets/images/sidebar/profile.png"}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                  />
                   )}
+
                 </div>
 
                 {/* ✅ Verified Badge */}
@@ -155,7 +174,9 @@ const CardPreview = ({ card, previewMode = "desktop" }) => {
                     }
                   }}
                   className="px-4 py-2 text-white text-sm font-medium rounded-md shadow hover:opacity-90 transition"
-                  style={{ backgroundColor: theme.primaryColor }}
+                  style={{ backgroundColor: theme.secondaryColor }}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = theme.territoryColor)}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = theme.secondaryColor)}
                 >
                   {card?.about?.mainButton?.buttonText || "Call Me Now"}
                 </button>
@@ -181,7 +202,7 @@ const CardPreview = ({ card, previewMode = "desktop" }) => {
 
               {/* ✅ Sections */}
               <div
-                className="space-y-4 mt-3 text-sm"
+                className="space-y-4 mt-3 text-sm px-3"
                 style={{ color: theme.textColor }}
               >
                 {/* Links Section */}
@@ -192,7 +213,7 @@ const CardPreview = ({ card, previewMode = "desktop" }) => {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="font-semibold hover:underline underline"
-                      style={{ color: theme.primaryColor }}
+                      style={{ color: theme.textColor }}
                     >
                       {card.content.linksSection.title}
                     </a>
@@ -203,8 +224,8 @@ const CardPreview = ({ card, previewMode = "desktop" }) => {
                 {card.content.textSection?.isEnabled && (
                   <div className="space-y-1">
                     <h4 className="font-semibold text-lg">{card.content.textSection?.heading}</h4>
-                    <h5 className="opacity-80 text-base font-medium">{card.content.textSection?.title}</h5>
-                    <p className="break-words text-base font-medium">
+                    <h5 className="opacity-90 text-base font-medium">{card.content.textSection?.title}</h5>
+                    <p className="break-words text-sm ">
                       {card.content.textSection.content}
                     </p>
                   </div>
@@ -217,7 +238,7 @@ const CardPreview = ({ card, previewMode = "desktop" }) => {
                     <div className="w-full aspect-w-16 aspect-h-9 rounded-lg overflow-hidden">
                       <iframe
                         className="w-full h-full"
-                        src={card.content?.youtubeSections?.link||""}
+                        src={getYoutubeEmbedUrl(card.content?.youtubeSections?.link)}
                         title="YouTube Video"
                         frameBorder="0"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -227,9 +248,9 @@ const CardPreview = ({ card, previewMode = "desktop" }) => {
                   </div>
                 )}
 
-
+                {console.log("From Preview", card)}
                 {/* ✅ Gallery Section (show title only if image exists) */}
-                {card?.content?.gallerySections?.isEnabled && card?.content?.gallerySections?.imgUrl !== "" && (
+                {card?.content?.gallerySections?.isEnabled && (
                   <div className="space-y-1">
                     <h4 className="font-semibold text-lg">
                       Gallery
@@ -248,38 +269,53 @@ const CardPreview = ({ card, previewMode = "desktop" }) => {
                     />
                   </div>
                 )}
-                {card?.content?.photoSections?.isEnabled && card?.content?.photoSections?.imgUrls?.length > 0 && (
+                {/* ✅ Photos Section (show title only if image exists) */}
+
+                {/* {card?.content?.photoSections?.isEnabled && (
                   <div className="space-y-1">
                     <h4 className="font-semibold text-lg">Photos</h4>
                     <div className="grid grid-cols-2 gap-2">
-                      {card.content.photoSections.imgUrls.map((img, index) => (
-                        <img
-                          key={index}
-                          src={`${API_BASE}${img}`}  // 👈 use the array item
-                          alt={`Photo ${index + 1}`}
-                          className="w-full h-32 object-cover rounded-lg"
-                        />
-                      ))}
+                      {[...(card.content.photoSections.photos || []), ...(card.content.photoSections.imgUrls || [])]
+                        .map((img, index) => (
+                          <img
+                            key={index}
+                            src={img.startsWith("blob:") ? img : `${API_BASE}${img}`}
+                            alt={`Photo ${index + 1}`}
+                            className="w-full h-32 object-cover rounded-lg"
+                          />
+                        ))}
+                    </div>
+                  </div>
+                )} */}
+                {card?.content?.photoSections?.isEnabled && (
+                  <div className="space-y-1">
+                    <h4 className="font-semibold text-lg">Photos</h4>
+                    <div className="grid grid-cols-2 gap-2">
+                      {[...(card.content.photoSections.photos || []), ...(card.content.photoSections.imgUrls || [])]
+                        .filter((img) => img && img.trim() !== "") // ✅ remove empty/cleared blobs
+                        .map((img, index) => (
+                          <img
+                            key={index}
+                            src={img.startsWith("blob:") ? img : `${API_BASE}${img}`}
+                            alt={`Photo ${index + 1}`}
+                            className="w-full h-32 object-cover rounded-lg"
+                          />
+                        ))}
                     </div>
                   </div>
                 )}
 
               </div>
             </div>
-            {console.log(card)}
-            {/* 
-            <p>{card?.about?.mainbutton?.text || ""}</p>
-            <p>{card?.about?.mainbutton?.mobile || ""}</p> */}
 
-            {/* ✅ WhatsApp Details */}
-            {/* <p>{card?.about?.whatsapp?.number || ""}</p>
-            <p>{card?.about?.whatsapp?.message || ""}</p> */}
-            <div className="flex justify-center gap-3 mt-4">
+            <div className="flex justify-center gap-3 mt-4 mb-4">
               {/* Call Me Button */}
               <button
                 onClick={() => setIsOpen(true)}
                 className="px-4 py-2 text-white text-sm font-medium rounded-full shadow hover:opacity-90 transition flex items-center cursor-pointer gap-1"
-                style={{ backgroundColor: theme.primaryColor }}
+                style={{ backgroundColor: theme.secondaryColor }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = theme.territoryColor)}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = theme.secondaryColor)}
               >
                 <Share2 size={16} /> Share
               </button>
@@ -291,21 +327,21 @@ const CardPreview = ({ card, previewMode = "desktop" }) => {
                 card.settings.showSaveContact === true && (
                   <button
                     className="px-4 py-2 text-white text-sm font-medium rounded-full shadow hover:opacity-90 transition flex items-center cursor-pointer gap-1 "
-                    style={{ backgroundColor: theme.primaryColor }}
+                    style={{ backgroundColor: theme.secondaryColor }}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = theme.territoryColor)}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = theme.secondaryColor)}
                   >
                     <Download size={16} />Save Contact
                   </button>
                 )
               }
-
             </div>
             {
               card.settings.removeBranding === false && (
-                <h1 className="flex justify-center items-center mt-5">Card Created From LMS</h1>
+                <h1 className="flex justify-center items-center">Card Created From LMS</h1>
               )
             }
           </div>
-        )}
       </div>
 
       <div className="grid grid-cols-1 gap-3">{/* Action buttons here */}</div>

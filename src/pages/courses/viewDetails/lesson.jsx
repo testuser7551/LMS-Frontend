@@ -299,9 +299,6 @@ const Lesson = ({ lesson, number, setPercentage , isEnrolled }) => {
             <span className="text-xs sm:text-sm font-medium block text-secondary">
               Lesson {number}
             </span>
-            <h2 className="font-semibold mb-1 text-primary text-base sm:text-lg md:text-xl">
-              {lesson.lessonName}
-            </h2>
             <h2 className="font-semibold mb-1 text-primary text-base md:w-40 lg:w-80 w-20 truncate sm:text-lg md:text-xl">
               {lesson.lessonName}
             </h2>

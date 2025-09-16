@@ -87,7 +87,10 @@ const Courses = () => {
   const processedCourses = useMemo(() => {
     return allCourses.map((course) => {
       const totalLessons = course.chapters.reduce(
-        (sum, ch) => sum + (ch.lessons?.length || 0),
+        (sum, chapter) =>
+          sum +
+          chapter.lessons.filter((lesson) => lesson.published === "Published")
+            .length,
         0
       );
       const totalMinutes = course.chapters.reduce(
@@ -120,18 +123,26 @@ const Courses = () => {
       let searchMatch = false;
 
       if (selectedTab === "all") {
-        tabMatch = !enrolledCourseIds.includes(course._id);
+        // Show only published courses
+        tabMatch =
+          !enrolledCourseIds.includes(course._id) &&
+          course.coursepublished === "Published";
+
         categoryMatch =
           allCategory === "All Sports" || course.category === allCategory;
+
         searchMatch =
           course.title.toLowerCase().includes(allSearch.toLowerCase()) ||
           course.description.toLowerCase().includes(allSearch.toLowerCase()) ||
           course.category.toLowerCase().includes(allSearch.toLowerCase());
       } else if (selectedTab === "pending") {
-        tabMatch = user?.role === "admin" && course.status === "pending";
+        // Show only draft courses for admin
+        tabMatch = user?.role === "admin" && course.coursepublished === "Draft";
+
         categoryMatch =
           pendingCategory === "All Sports" ||
           course.category === pendingCategory;
+
         searchMatch =
           course.title.toLowerCase().includes(pendingSearch.toLowerCase()) ||
           course.description
@@ -141,8 +152,10 @@ const Courses = () => {
       } else if (selectedTab === "my") {
         tabMatch =
           user?.role !== "admin" && enrolledCourseIds.includes(course._id);
+
         categoryMatch =
           myCategory === "All Sports" || course.category === myCategory;
+
         searchMatch =
           course.title.toLowerCase().includes(mySearch.toLowerCase()) ||
           course.description.toLowerCase().includes(mySearch.toLowerCase()) ||
@@ -152,9 +165,11 @@ const Courses = () => {
           user?.role !== "admin" &&
           enrolledCourseIds.includes(course._id) &&
           course.hasCertificate;
+
         categoryMatch =
           certificatesCategory === "All Sports" ||
           course.category === certificatesCategory;
+
         searchMatch =
           course.title
             .toLowerCase()
@@ -183,6 +198,7 @@ const Courses = () => {
     pendingSearch,
     user,
   ]);
+  
 
   // Select filters based on tab
   const currentCategory =

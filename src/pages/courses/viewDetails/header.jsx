@@ -38,9 +38,13 @@ const Header = ({ course, setIsEnrolled, isEnrolled }) => {
   }, [user, course]);
 
   const totalLessons = course.chapters.reduce(
-    (sum, ch) => sum + ch.lessons.length,
+    (sum, chapter) =>
+      sum +
+      chapter.lessons.filter((lesson) => lesson.published === "Published")
+        .length,
     0
   );
+  
   const totalMinutes = course.chapters.reduce((sum, chapter) => {
     return (
       sum +

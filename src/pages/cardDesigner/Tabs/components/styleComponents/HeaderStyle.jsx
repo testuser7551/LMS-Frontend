@@ -2,14 +2,14 @@
 import React, { useEffect, useState } from "react";
 import { saveHeaderSection } from "../../../../../api/carddesign/styleSection";
 
-const HeaderStyle = ({ profile, onChange }) => {
+const HeaderStyle = ({ headerStyle, onChange }) => {
   const options = ["left", "center", "right"];
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
     try {
       setSaving(true);
-      await saveHeaderSection(profile.headerStyle); // send current style to backend
+      await saveHeaderSection(headerStyle); // send current style to backend
       alert("✅ Header style saved!");
     } catch (err) {
       //console.error("Save header style error:", err);
@@ -18,7 +18,6 @@ const HeaderStyle = ({ profile, onChange }) => {
       setSaving(false);
     }
   };
-
 
   return (
     <div className="bg-white shadow-sm border border-gray-200 rounded-xl p-6">
@@ -29,11 +28,11 @@ const HeaderStyle = ({ profile, onChange }) => {
           <button
             key={option}
             type="button"
-            onClick={() => onChange("headerStyle", option)}
+            onClick={() => onChange(option)}
             className={`flex-1 h-14 rounded-md border flex items-center justify-center font-medium font-poppins
               transition-all duration-200 ease-in-out
               ${
-                profile.headerStyle === option
+                headerStyle === option
                   ? "border-[var(--color-primary)] ring-2 ring-[var(--color-activecolor)] bg-[var(--color-activecolor)] text-[var(--color-headcolor)]"
                   : "border-gray-300 text-gray-600 hover:border-[var(--color-secondary)] hover:bg-[var(--color-subbgcolor)] hover:text-[var(--color-headcolor)]"
               }`}

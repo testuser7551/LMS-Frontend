@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { X, Share2, Copy, Mail, Twitter, QrCode, Linkedin } from "lucide-react";
 import { QRCodeCanvas } from "qrcode.react";
-import { encryptId } from "../../../components/encrypt.js";
+// import { encryptId } from "../../../components/encrypt.js";
 import {showToast} from "../../../components/toast.js";
 
 function ShareModal({ card, onClose }) {
@@ -13,7 +13,7 @@ function ShareModal({ card, onClose }) {
     const [showEmailInput, setShowEmailInput] = useState(false);
     const [inputValue, setInputValue] = useState("");
 
-    const encryptedId = encryptId(card.id);
+    // const encryptedId = encryptId(card.id);
     // const shareUrl = `${window.location.origin}/cardview?id=${encryptedId}`;
     const shareUrl = `${window.location.origin}/cardview?id=${card.id}`;
 

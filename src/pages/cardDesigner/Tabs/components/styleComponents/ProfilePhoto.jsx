@@ -303,7 +303,7 @@
 //   // ✅ Save profile to backend
 //   const handleSave = async () => {
 //     try {
-      
+
 //       const saved = await saveProfileSection(profile);
 //       // Push saved values back into parent state
 //       Object.keys(saved).forEach((key) => onChange(key, saved[key]));
@@ -470,6 +470,8 @@
 import React, { useState } from "react";
 import { saveProfileSection } from "../../../../../api/carddesign/styleSection";
 
+const API_BASE = import.meta.env.VITE_API_BASE;
+
 const ProfilePhoto = ({ profile, onChange }) => {
   const [loading, setLoading] = useState(false);
   const [file, setFile] = useState(null); // store actual File object
@@ -524,7 +526,6 @@ const ProfilePhoto = ({ profile, onChange }) => {
 
       alert("✅ Profile saved!");
     } catch (err) {
-      console.error("❌ Save profile error:", err);
       alert("Failed to save profile");
     } finally {
       setLoading(false);
@@ -545,34 +546,66 @@ const ProfilePhoto = ({ profile, onChange }) => {
             ${profile.profileRingOnPhoto ? "ring-2 ring-primary" : ""}`}
         >
           {profile.profileImgUrl ? (
+            // <img
+            //   src={
+            //     profile?.profileImgUrl?.startsWith("blob:")
+            //       ? profile.profileImgUrl : profile?.profileImgUrl?.startsWith("blob:") ? profile?.profileImgUrl?.startsWith("blob:") : `/assets/images/sidebar/profile.png`
+            //       : `${API_BASE}${profile?.profileImgUrl}`
+            //   }
+            //   alt="Profile"
+            //   className="w-full h-full object-cover"
+            // />
             <img
-              src={profile.profileImgUrl}
+              src={
+                profile?.profileImgUrl
+                  ? profile?.profileImgUrl.startsWith("blob:")
+                    ? profile.profileImgUrl
+                    : `${API_BASE}${profile.profileImgUrl}`
+                  : "/assets/images/sidebar/profile.png"
+              }
               alt="Profile"
               className="w-full h-full object-cover"
             />
+
+            //             <img
+            //   src={
+            //     profile?.profileImgUrl && profile.profileImgUrl.trim() !== ""
+            //       ? (console.log("👉 Using blob preview:", profile.profileImgUrl), profile.profileImgUrl)
+            //       : (console.log("👉 Using default image: /assets/images/sidebar/profile.png"), "/assets/images/sidebar/profile.png")
+            //   }
+            //   alt="Profile"
+            //   className="w-full h-full object-cover"
+            // />
+
+
+
           ) : (
-            <span className="text-2xl font-medium text-gray-500">JPG</span>
+            <img
+            src={"/assets/images/sidebar/profile.png"}
+            alt="Profile"
+            className="w-full h-full object-cover"
+          />
           )}
         </div>
 
         {/* Upload Button */}
         <div className="flex items-center gap-3">
-        <label className="bg-primary text-white px-5 py-2 rounded-lg cursor-pointer">
-          Upload
-          <input
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => {
-              const selectedFile = e.target.files[0];
-              if (selectedFile) {
-                setFile(selectedFile); // store File object
-                const previewUrl = URL.createObjectURL(selectedFile);
-                onChange("profileImgUrl", previewUrl); // preview only
-              }
-            }}
-          />
-        </label>
+          <label className="bg-primary text-white px-5 py-2 rounded-lg cursor-pointer">
+            Upload
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const selectedFile = e.target.files[0];
+                if (selectedFile) {
+                  setFile(selectedFile); // store File object
+                  const previewUrl = URL.createObjectURL(selectedFile);
+                  onChange("profileImgUrl", previewUrl); // preview only
+                }
+              }}
+            />
+          </label>
 
           {/* Remove Photo Button */}
           {profile.profileImgUrl && (
@@ -590,8 +623,8 @@ const ProfilePhoto = ({ profile, onChange }) => {
                 (e.currentTarget.style.backgroundColor = "#e65f53")
               }
               onMouseLeave={(e) =>
-                (e.currentTarget.style.backgroundColor =
-                  "var(--color-danger)")
+              (e.currentTarget.style.backgroundColor =
+                "var(--color-danger)")
               }
             >
               Remove
@@ -636,22 +669,20 @@ const ProfilePhoto = ({ profile, onChange }) => {
         </p>
         <div className="grid grid-cols-2 gap-4">
           <button
-            className={`flex flex-col items-center justify-center p-6 rounded-xl border transition ${
-              profile.profileShapes === "circle"
-                ? "bg-gray-100 border-primary"
-                : "border-gray-300 hover:border-primary"
-            }`}
+            className={`flex flex-col items-center justify-center p-6 rounded-xl border transition ${profile.profileShapes === "circle"
+              ? "bg-gray-100 border-primary"
+              : "border-gray-300 hover:border-primary"
+              }`}
             onClick={() => onChange("profileShapes", "circle")}
           >
             <div className="w-10 h-10 rounded-full bg-secondary mb-2"></div>
             <span className="text-sm text-gray-700 font-poppins">Circle</span>
           </button>
           <button
-            className={`flex flex-col items-center justify-center p-6 rounded-xl border transition ${
-              profile.profileShapes === "square"
-                ? "bg-gray-100 border-primary"
-                : "border-gray-300 hover:border-primary"
-            }`}
+            className={`flex flex-col items-center justify-center p-6 rounded-xl border transition ${profile.profileShapes === "square"
+              ? "bg-gray-100 border-primary"
+              : "border-gray-300 hover:border-primary"
+              }`}
             onClick={() => onChange("profileShapes", "square")}
           >
             <div className="w-10 h-10 rounded bg-secondary mb-2"></div>
