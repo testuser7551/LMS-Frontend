@@ -21,6 +21,8 @@ const API_BASE = import.meta.env.VITE_API_BASE;
 import { AuthContext } from "../../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import QuizPopup from "./quiz";
+import ErrorModal from "../Components/ErrorModal";
+import SuccessModal from "../Components/SuccessModal";
 
 const lectureIcons = {
   Video: <Video className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />,
@@ -52,6 +54,32 @@ const Lesson = ({ lesson, number, setPercentage , isEnrolled }) => {
 
     return tabs;
   });
+
+
+  
+  const [isErrorOpen, setIsErrorOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const showError = (msg) => {
+    setErrorMessage(msg);
+    setIsErrorOpen(true);
+  };
+
+
+  
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+
+  const showSuccess = (message) => {
+    setModalMessage(message);
+    setIsModalOpen(true);
+  };
+
+  const handleClose = () => {
+    setIsModalOpen(false);
+  };
+  
+
 
   const handleTabClick = (secId, index) => {
     setActiveTabs((prev) => ({ ...prev, [secId]: index }));
@@ -96,10 +124,10 @@ const Lesson = ({ lesson, number, setPercentage , isEnrolled }) => {
         setQuizPopupData(lesson.quiz);
       } catch (error) {
         console.error("Error checking quiz status", error);
-        alert("Failed to check quiz status.");
+        showError("Failed to check quiz status.");
       }
     } else {
-      alert("No quiz available for this lesson.");
+      showError("No quiz available for this lesson.");
     }
   };
 
@@ -121,7 +149,7 @@ const Lesson = ({ lesson, number, setPercentage , isEnrolled }) => {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       ////console.error("Download failed:", error);
-      alert("Failed to download the file.");
+      showError("Failed to download the file.");
     }
   };
 
@@ -159,7 +187,6 @@ const Lesson = ({ lesson, number, setPercentage , isEnrolled }) => {
         lessonId
       );
       const progress = response.progress;
-      console.log(progress);
       // Get all lessons from all chapters
       const allLessons = progress.chapters.flatMap(
         (chapter) => chapter.lessons
@@ -177,18 +204,17 @@ const Lesson = ({ lesson, number, setPercentage , isEnrolled }) => {
         totalLessons === 0 ? 0 : (completedCount / totalLessons) * 100;
 
       const percentage = progressPercent;
-      console.log(percentage);
 
       setPercentage(progressPercent);
-      console.log(`Course Progress: ${progressPercent.toFixed(2)}%`);
 
       setIsCompleted(true);
 
-      alert("Lesson completed!");
+      showSuccess("Lesson completed!");
 
       const completionResult = await checkCourseCompleteAPI(userId, courseId);
-      console.log(completionResult.message);
       const details = {
+        userId,
+        courseId,
         name: user.name, // from context or props
         course: lesson.course.title, // from props
         director: lesson.course.instructor || "Unknown Instructor",
@@ -201,16 +227,15 @@ const Lesson = ({ lesson, number, setPercentage , isEnrolled }) => {
         year: new Date().getFullYear(),
       };
       if (completionResult.courseCompleted) {
-        alert("Congratulations! You have completed the course.");
+        showSuccess("Congratulations! You have completed the course.");
 
-        console.log("Details after marking lesson complete:", details);
         navigate("/courses/certificate", {
           state: { details },
         });
       }
     } catch (error) {
       ////console.error("Failed to mark lesson complete:", error);
-      alert(error.message || "Failed to mark lesson complete");
+      showError(error.message || "Failed to mark lesson complete");
     }
   };
 
@@ -229,7 +254,6 @@ const Lesson = ({ lesson, number, setPercentage , isEnrolled }) => {
         answers
       );
       const progress = response.progress;
-      console.log(progress);
       // Get all lessons from all chapters
       const allLessons = progress.chapters.flatMap(
         (chapter) => chapter.lessons
@@ -246,19 +270,18 @@ const Lesson = ({ lesson, number, setPercentage , isEnrolled }) => {
       const progressPercent =
         totalLessons === 0 ? 0 : (completedCount / totalLessons) * 100;
       const percentage = progressPercent;
-      console.log(percentage);
 
       setPercentage(progressPercent);
-      console.log(`Course Progress: ${progressPercent.toFixed(2)}%`);
 
       // Mark lesson as completed locally
       setIsCompleted(true);
       setQuizCompleted(true); // ensures Mark Complete button appears for non-quiz logic if needed
-      alert("Quiz submitted and lesson marked complete!");
+      showSuccess("Quiz submitted and lesson marked complete!");
 
       const completionResult = await checkCourseCompleteAPI(userId, courseId);
-      console.log(completionResult.message);
       const details = {
+        userId,
+        courseId,
         name: user.name, // from context or props
         course: lesson.course.title, // from props
         director: lesson.course.instructor || "Unknown Instructor",
@@ -271,16 +294,15 @@ const Lesson = ({ lesson, number, setPercentage , isEnrolled }) => {
         year: new Date().getFullYear(),
       };
       if (completionResult.courseCompleted) {
-        alert("Congratulations! You have completed the course.");
+        showSuccess("Congratulations! You have completed the course.");
 
-        console.log("Details after marking lesson complete:", details);
         navigate("/courses/certificate", {
           state: { details },
         });
       }
     } catch (error) {
       ////console.error("Failed to submit quiz:", error);
-      alert(error.message || "Failed to submit quiz");
+      showError(error.message || "Failed to submit quiz");
     }
   };
 
@@ -367,7 +389,8 @@ const Lesson = ({ lesson, number, setPercentage , isEnrolled }) => {
           )}
 
           {/* Mark Complete */}
-          {user.role !== "admin" && isEnrolled &&
+          {user.role !== "admin" &&
+            isEnrolled &&
             (lesson.lectureType === "Quiz" ? (
               quizCompleted && (
                 <button
@@ -484,6 +507,16 @@ const Lesson = ({ lesson, number, setPercentage , isEnrolled }) => {
           quizCompleted={isCompleted}
         />
       )}
+      <SuccessModal
+        isOpen={isModalOpen}
+        message={modalMessage}
+        onClose={handleClose}
+      />
+      <ErrorModal
+        isOpen={isErrorOpen}
+        message={errorMessage}
+        onClose={() => setIsErrorOpen(false)}
+      />
     </div>
   );
 };

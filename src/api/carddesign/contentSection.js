@@ -74,3 +74,40 @@ export const deletePhotoAPI = async (filename) => {
 };
 
 
+// content About Page Sections API
+
+export const updateContentAbout = async (data) => {
+  return await putRequest(`/api/content/about`, data);
+};
+
+export const isEnabledContent = async (data) => {
+  return await putRequest(`/api/content/isenabled`, data);
+};
+
+//Experience api logics
+
+// Update experienceSection (title, isEnabled)
+export const updateExperienceMeta = async (data) => {
+  return await putRequest(`/api/content/experience-title`, data);
+};
+
+//save Experience Section modal Array
+export const saveExperienceSection = async (data) => {
+  return await postRequest(`/api/content/experience`, data);
+};
+
+// Update a single experience by its ID
+export const updateExperienceById = async (experienceId, data) => {
+  return await putRequest(`/api/content/experience/${experienceId}`, data);
+};
+
+// Delete an experience by its ID
+export const deleteExperience = async (experienceId) => {
+  return await deleteRequest(`/api/content/experience/${experienceId}`);
+};
+
+
+export const getAllCertificates = async () => {
+  return await getRequest('/api/content/certificates');
+};
+

@@ -6,6 +6,7 @@ import {
   updateCategory,
   deleteCategory,
 } from "../../api/courses/category";
+import ConfirmModal from "./Components/ConfrimModal";
 
 const CategoryForm = () => {
   const [category, setCategory] = useState("");
@@ -14,6 +15,8 @@ const CategoryForm = () => {
   const [error, setError] = useState("");
   const [editId, setEditId] = useState(null);
   const [hoveredId, setHoveredId] = useState(null);
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState(null);
 
   const user = JSON.parse(localStorage.getItem("user")) || {
     name: "Guest",
@@ -80,20 +83,37 @@ const CategoryForm = () => {
     setEditId(cat._id);
   };
 
-  const handleDeleteCategory = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this category?"))
-      return;
+  // Open modal with selected category
+  const handleDeleteCategory = (id) => {
+    setCategoryToDelete(id);
+    setConfirmModalOpen(true);
+  };
+
+  // Cancel / Close modal
+  const handleCancel = () => {
+    setCategoryToDelete(null);
+    setConfirmModalOpen(false);
+  };
+
+  // Confirm delete
+  const handleDeleteConfirmed = async () => {
+    if (!categoryToDelete) return;
 
     try {
       setLoading(true);
-      await deleteCategory(id);
-      setCategories((prev) => prev.filter((cat) => cat._id !== id));
+      await deleteCategory(categoryToDelete); // call your API
+      // Update local state
+      setCategories((prev) =>
+        prev.filter((cat) => cat._id !== categoryToDelete)
+      );
     } catch (err) {
       setError(
         err.response?.data?.message || err.message || "Failed to delete"
       );
     } finally {
       setLoading(false);
+      setCategoryToDelete(null);
+      setConfirmModalOpen(false);
     }
   };
 
@@ -179,6 +199,26 @@ const CategoryForm = () => {
           ))}
         </ul>
       </div>
+      {/* Confirm Modal */}
+      <ConfirmModal
+        isOpen={confirmModalOpen}
+        title="Delete Category"
+        message="Are you sure you want to delete this category?"
+        buttons={[
+          {
+            text: "Cancel",
+            onClick: handleCancel,
+            color: "bg-gray-200",
+            textColor: "text-gray-700",
+          },
+          {
+            text: "Delete",
+            onClick: handleDeleteConfirmed,
+            color: "bg-red-600",
+          },
+        ]}
+        onClose={handleCancel}
+      />
     </div>
   );
 };

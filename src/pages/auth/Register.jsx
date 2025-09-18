@@ -62,7 +62,7 @@ const Register = () => {
   const roleOptions = [
     { value: 'student', label: 'Student', description: 'Learn and take courses' },
     { value: 'instructor', label: 'Instructor', description: 'Create and teach courses' },
-    { value: 'mentor', label: 'Mentor', description: 'Guide and support students' },
+    // { value: 'mentor', label: 'Mentor', description: 'Guide and support students' },
     { value: 'admin', label: 'Admin', description: 'Manage the platform' },
   ]
 

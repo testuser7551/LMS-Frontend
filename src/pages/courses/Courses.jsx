@@ -1,11 +1,15 @@
 import React, { useState, useEffect, useContext, useMemo } from "react";
-import { Search, Play, Clock, X } from "lucide-react";
+import { Search, Play, Clock, X, Users } from "lucide-react";
 import CategoryForm from "./CategoryForm";
 import { useNavigate } from "react-router-dom";
 import CustomDropdown from "./CustomDropdown";
 import { AuthContext } from "../../context/AuthContext";
+import CompletedCourses from "./CompletedCourses";
 
-import { fetchCoursesAPI } from "../../api/courses/courses";
+import {
+  fetchCoursesAPI,
+  getEnrolledCourseCountAPI,
+} from "../../api/courses/courses";
 import { getEnrollment } from "../../api/courses/enroll";
 import { fetchCategories } from "../../api/courses/category";
 
@@ -18,7 +22,6 @@ const Courses = () => {
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [categories, setCategories] = useState([]);
   const navigate = useNavigate();
-  const [allCourses, setAllCourses] = useState([]);
 
   // Separate state for each tab's filters
   const [allSearch, setAllSearch] = useState("");
@@ -34,19 +37,56 @@ const Courses = () => {
   const [pendingSearch, setPendingSearch] = useState("");
   const [pendingCategory, setPendingCategory] = useState("All Sports");
 
+  const [enrolledCount, setEnrolledCount] = useState(0);
+  const [allCourses, setAllCourses] = useState([]);
+
   // Fetch courses once
+  // useEffect(() => {
+  //   const fetchCourses = async () => {
+  //     try {
+  //       const coursesData = await fetchCoursesAPI();
+  //       setAllCourses(coursesData);
+  //     } catch {
+  //       alert("Failed to fetch courses.");
+  //     }
+  //   };
+  //   fetchCourses();
+  // }, []);
+
+  // Fetch all courses
   useEffect(() => {
     const fetchCourses = async () => {
       try {
         const coursesData = await fetchCoursesAPI();
         setAllCourses(coursesData);
-      } catch {
+
+        // After fetching, fetch enrolled counts for each course
+        const counts = {};
+        await Promise.all(
+          coursesData.map(async (course) => {
+            try {
+              const data = await getEnrolledCourseCountAPI(course._id);
+              if (data.success) {
+                counts[course._id] = data.enrolledCount;
+              }
+            } catch (error) {
+              console.error(
+                `Failed to get enrolled count for ${course._id}`,
+                error
+              );
+              counts[course._id] = 0; // default fallback
+            }
+          })
+        );
+        setEnrolledCount(counts);
+      } catch (error) {
+        console.error("Failed to fetch courses:", error);
         alert("Failed to fetch courses.");
       }
     };
+
     fetchCourses();
   }, []);
-
   // Load categories once
   useEffect(() => {
     const loadCategories = async () => {
@@ -76,7 +116,7 @@ const Courses = () => {
           const data = await getEnrollment(user._id);
           setEnrollments(data.enrollments || []);
         } catch (err) {
-          console.log(err);
+          // console.log(err);
         }
       };
       loadEnrollment();
@@ -131,24 +171,45 @@ const Courses = () => {
         categoryMatch =
           allCategory === "All Sports" || course.category === allCategory;
 
+        // searchMatch =
+        //   course.title.toLowerCase().includes(allSearch.toLowerCase()) ||
+        //   course.description.toLowerCase().includes(allSearch.toLowerCase()) ||
+        //   course.category.toLowerCase().includes(allSearch.toLowerCase());
+
         searchMatch =
           course.title.toLowerCase().includes(allSearch.toLowerCase()) ||
           course.description.toLowerCase().includes(allSearch.toLowerCase()) ||
-          course.category.toLowerCase().includes(allSearch.toLowerCase());
+          course.category.toLowerCase().includes(allSearch.toLowerCase()) ||
+          (course.tags &&
+            course.tags.some((tag) =>
+              tag.toLowerCase().includes(allSearch.toLowerCase())
+            ));
       } else if (selectedTab === "pending") {
-        // Show only draft courses for admin
-        tabMatch = user?.role === "admin" && course.coursepublished === "Draft";
+        tabMatch =
+          (user?.role === "admin" || user?.role === "instructor") &&
+          course.coursepublished === "Draft";
 
         categoryMatch =
           pendingCategory === "All Sports" ||
           course.category === pendingCategory;
+
+        // searchMatch =
+        //   course.title.toLowerCase().includes(pendingSearch.toLowerCase()) ||
+        //   course.description
+        //     .toLowerCase()
+        //     .includes(pendingSearch.toLowerCase()) ||
+        //   course.category.toLowerCase().includes(pendingSearch.toLowerCase());
 
         searchMatch =
           course.title.toLowerCase().includes(pendingSearch.toLowerCase()) ||
           course.description
             .toLowerCase()
             .includes(pendingSearch.toLowerCase()) ||
-          course.category.toLowerCase().includes(pendingSearch.toLowerCase());
+          course.category.toLowerCase().includes(pendingSearch.toLowerCase()) ||
+          (course.tags &&
+            course.tags.some((tag) =>
+              tag.toLowerCase().includes(pendingSearch.toLowerCase())
+            ));
       } else if (selectedTab === "my") {
         tabMatch =
           user?.role !== "admin" && enrolledCourseIds.includes(course._id);
@@ -156,10 +217,18 @@ const Courses = () => {
         categoryMatch =
           myCategory === "All Sports" || course.category === myCategory;
 
+        // searchMatch =
+        //   course.title.toLowerCase().includes(mySearch.toLowerCase()) ||
+        //   course.description.toLowerCase().includes(mySearch.toLowerCase()) ||
+        //   course.category.toLowerCase().includes(mySearch.toLowerCase());
         searchMatch =
           course.title.toLowerCase().includes(mySearch.toLowerCase()) ||
           course.description.toLowerCase().includes(mySearch.toLowerCase()) ||
-          course.category.toLowerCase().includes(mySearch.toLowerCase());
+          course.category.toLowerCase().includes(mySearch.toLowerCase()) ||
+          (course.tags &&
+            course.tags.some((tag) =>
+              tag.toLowerCase().includes(mySearch.toLowerCase())
+            ));
       } else if (selectedTab === "certificates") {
         tabMatch =
           user?.role !== "admin" &&
@@ -170,6 +239,17 @@ const Courses = () => {
           certificatesCategory === "All Sports" ||
           course.category === certificatesCategory;
 
+        // searchMatch =
+        //   course.title
+        //     .toLowerCase()
+        //     .includes(certificatesSearch.toLowerCase()) ||
+        //   course.description
+        //     .toLowerCase()
+        //     .includes(certificatesSearch.toLowerCase()) ||
+        //   course.category
+        //     .toLowerCase()
+        //     .includes(certificatesSearch.toLowerCase());
+
         searchMatch =
           course.title
             .toLowerCase()
@@ -179,7 +259,11 @@ const Courses = () => {
             .includes(certificatesSearch.toLowerCase()) ||
           course.category
             .toLowerCase()
-            .includes(certificatesSearch.toLowerCase());
+            .includes(certificatesSearch.toLowerCase()) ||
+          (course.tags &&
+            course.tags.some((tag) =>
+              tag.toLowerCase().includes(certificatesSearch.toLowerCase())
+            ));
       }
 
       return tabMatch && categoryMatch && searchMatch;
@@ -198,7 +282,6 @@ const Courses = () => {
     pendingSearch,
     user,
   ]);
-  
 
   // Select filters based on tab
   const currentCategory =
@@ -243,7 +326,7 @@ const Courses = () => {
       <div className="z-20 sticky top-0 p-6 bg-white shadow-md">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <h1 className="text-3xl font-bold text-primary">Explore Courses</h1>
-          {user?.role === "admin" && (
+          {(user?.role === "admin" || user?.role === "instructor") && (
             <div className="flex gap-2 flex-wrap">
               <button
                 onClick={() => setShowCategoryModal(true)}
@@ -274,7 +357,7 @@ const Courses = () => {
             >
               All Courses
             </button>
-            {user?.role !== "admin" && (
+            {user?.role === "student" && (
               <>
                 <button
                   onClick={() => setSelectedTab("my")}
@@ -298,7 +381,7 @@ const Courses = () => {
                 </button>
               </>
             )}
-            {user?.role === "admin" && (
+            {(user?.role === "admin" || user?.role === "instructor") && (
               <button
                 onClick={() => setSelectedTab("pending")}
                 className={`px-4 py-3 font-semibold transition cursor-pointer border-b-1 border-black ${
@@ -373,11 +456,33 @@ const Courses = () => {
                 />
 
                 <div className="p-4 space-y-3">
-                  <h2 className="text-lg font-bold truncate">{course.title}</h2>
+                  <h2 className="text-lg font-bold line-clamp-2 break-words">
+                    {course.title}
+                  </h2>
                   <p className="text-gray-600 text-sm line-clamp-2 break-words">
                     {course.description}
                   </p>
-
+                  {/* <p>Enrolled Students: {enrolledCount[course._id] || 0}</p> */}
+                  <div className="flex items-center gap-2 ">
+                    <Users className="w-5 h-5 text-primary" />
+                    <span className="text-sm font-medium text-gray-700">
+                      {enrolledCount[course._id] || 0} Enrolled
+                    </span>
+                  </div>
+                  {/* <div className="flex flex-wrap gap-2">
+                    {course.tags && course.tags.length > 0 ? (
+                      course.tags.map((tag, index) => (
+                        <span
+                          key={index}
+                          className="bg-secondary text-white px-2 py-1 rounded-full text-sm"
+                        >
+                          #{tag} 
+                        </span>
+                      ))
+                    ) : (
+                      <span></span>
+                    )}
+                  </div> */}
                   <div className="flex justify-between text-sm text-gray-600 items-center bottom-0">
                     <div className="flex items-center gap-1">
                       <Play className="w-4 h-4" />
@@ -391,7 +496,7 @@ const Courses = () => {
                     </div>
                   </div>
 
-                  <button
+                  {/* <button
                     onClick={() =>
                       navigate("viewdetails", {
                         state: { courseId: course._id },
@@ -400,7 +505,46 @@ const Courses = () => {
                     className="w-full bottom-0 bg-primary text-white hover:bg-white hover:text-black cursor-pointer py-2 rounded-lg border-2 border-primary transition"
                   >
                     View Details
-                  </button>
+                  </button> */}
+                  {user.role === "admin" || user.role === "instructor" ? (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() =>
+                          navigate("viewdetails", {
+                            state: { courseId: course._id },
+                          })
+                        }
+                        className="flex-1 bg-primary text-white hover:bg-white hover:text-black cursor-pointer py-2 rounded-lg border-2 border-primary transition"
+                      >
+                        View Details
+                      </button>
+                      {enrolledCount[course._id] === 0 && (
+                        <>
+                          <button
+                            className="flex-1 flex items-center justify-center gap-2 px-4 py-2 cursor-pointer rounded-lg text-sm bg-primary text-white hover:bg-secondary/80 transition"
+                            onClick={() =>
+                              navigate("/courses/addcourse", {
+                                state: { courseId: course._id },
+                              })
+                            }
+                          >
+                            Edit Course
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() =>
+                        navigate("viewdetails", {
+                          state: { courseId: course._id },
+                        })
+                      }
+                      className="w-full bg-primary text-white hover:bg-white hover:text-black cursor-pointer py-2 rounded-lg border-2 border-primary transition"
+                    >
+                      View Details
+                    </button>
+                  )}
                 </div>
               </div>
             ))
@@ -423,6 +567,7 @@ const Courses = () => {
           </div>
         </div>
       )}
+      {/* <CompletedCourses userId={user._id} /> */}
     </div>
   );
 };

@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }) => {
 
     try {
       const decoded = jwtDecode(token);
-      console.log("Decoded JWT:", decoded);
+     // console.log("Decoded JWT:", decoded);
       if (decoded.exp && decoded.exp * 1000 < Date.now()) {
         // expired
         localStorage.removeItem("token");

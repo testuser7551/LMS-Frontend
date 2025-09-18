@@ -566,19 +566,6 @@ const ProfilePhoto = ({ profile, onChange }) => {
               alt="Profile"
               className="w-full h-full object-cover"
             />
-
-            //             <img
-            //   src={
-            //     profile?.profileImgUrl && profile.profileImgUrl.trim() !== ""
-            //       ? (console.log("👉 Using blob preview:", profile.profileImgUrl), profile.profileImgUrl)
-            //       : (console.log("👉 Using default image: /assets/images/sidebar/profile.png"), "/assets/images/sidebar/profile.png")
-            //   }
-            //   alt="Profile"
-            //   className="w-full h-full object-cover"
-            // />
-
-
-
           ) : (
             <img
             src={"/assets/images/sidebar/profile.png"}

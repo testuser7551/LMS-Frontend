@@ -32,7 +32,7 @@ function App() {
       <Routes>
         {/* Redirect root */}
         <Route path="/" element={<Navigate to="/login" />} />
-
+        <Route path="*" element={<Navigate to="/courses" />} />
         {/* Public */}
         <Route path="/signup" element={<Register />} />
         <Route path="/login" element={<Login />} />
@@ -65,7 +65,7 @@ function App() {
           <Route path="discussions" element={<DiscussionPage />} />
 
           {/* Catch-all */}
-          <Route path="*" element={<div className="p-6">Page Not Found</div>} />
+          <Route path="*" element={<Navigate to="/courses" />}/>
         </Route>
       </Routes>
     </>
@@ -78,7 +78,7 @@ const DefaultDashboard = () => {
   if (user?.role === "admin") return <Courses />;
   if (user?.role === "student") return <Courses />;
   if (user?.role === "mentor") return <div>Mentor Dashboard Coming Soon</div>;
-  if (user?.role === "instructor") return <div>Instructor Dashboard Coming Soon</div>;
+  if (user?.role === "instructor") return <Courses />;;
   return null;
 };
 

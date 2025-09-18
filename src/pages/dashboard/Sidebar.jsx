@@ -39,7 +39,6 @@ const Sidebar = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
-console.log("isMobileOpenisMobileOpen",isMobileOpen);
   const sidebarItems = [
     // {
     //   icon: Home,
@@ -113,7 +112,7 @@ console.log("isMobileOpenisMobileOpen",isMobileOpen);
           <div className="flex items-center gap-1">
             <button
               onClick={() => setIsCollapsed(!isCollapsed)}
-              className="hidden lg:flex p-1.5 rounded-lg hover:bg-headcolor transition-colors hover:text-white text-headcolor font-poppins"
+              className="hidden lg:flex p-1.5 rounded-lg hover:bg-headcolor transition-colors hover:text-white text-headcolor font-poppins cursor-pointer"
             >
               {isCollapsed ? (
                 <ChevronRight size={18} />
@@ -123,7 +122,7 @@ console.log("isMobileOpenisMobileOpen",isMobileOpen);
             </button>
             <button
               onClick={() => setIsMobileOpen(false)}
-              className="lg:hidden p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+              className="lg:hidden p-1.5 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
             >
               <X size={18} />
             </button>
@@ -158,7 +157,7 @@ console.log("isMobileOpenisMobileOpen",isMobileOpen);
                 setIsMobileOpen(false);
                 navigate("/");
               }}
-              className="cursor-pointer w-full group flex flex-col items-center px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg hover:bg-red-200 bg-red-50  transition-all duration-200"
+              className="cursor-pointer w-full group flex flex-col items-center px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg hover:bg-red-200 bg-red-50  transition-all duration-200 "
             >
               <LogOut
                 size={20}
@@ -216,7 +215,7 @@ console.log("isMobileOpenisMobileOpen",isMobileOpen);
                 setIsMobileOpen(false);
               }}
               title={isCollapsed ? item.label : ""}
-              className={`w-full flex items-center font-bold ${isCollapsed ? "justify-start" : "justify-start"
+              className={`w-full flex items-center font-bold cursor-pointer ${isCollapsed ? "justify-start" : "justify-start"
                 } space-x-2 sm:space-x-3 px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg text-left transition-all duration-200 group ${isActive
                   ? "bg-activecolor text-headtext"
                   : "text-headtext hover:bg-activecolor hover:text-headcolor"

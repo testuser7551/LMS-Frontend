@@ -4,14 +4,15 @@ import { TextSection } from "../Tabs/components/contentComponents/TextSection";
 import { YouTubeSection } from "../Tabs/components/contentComponents/YouTubeSection";
 import { GallerySection } from "../Tabs/components/contentComponents/GallerySection";
 import { PhotosSection } from "../Tabs/components/contentComponents/PhotosSection";
+import { AboutTab } from "./AboutTab";
+import { CertificateTab } from "./CertificateTab";
 
 import { Link, Type, Youtube, Image, Images } from "lucide-react";
 
 const sections = [
-  { id: 'first', label: 'First' },
-  { id: 'second', label: 'Second' },
-  { id: 'third', label: 'Third' },
-  { id: 'fourth', label: 'Fourth' },
+  { id: 'home', label: 'Home' },
+  { id: 'about', label: 'About' },
+  { id: 'certificates', label: 'Certificates' },
 ];
 
 // ✅ Section types
@@ -40,7 +41,7 @@ const sectionTypes = [
 
 function ContentSection({ card, onCardChange }) {
   // Ensure all sections exist ONCE with stable IDs
-  const [activeSection, setActiveSection] = useState('first');
+  const [activeSection, setActiveSection] = useState('home');
   const updateField = (section, field, value) => {
     onCardChange({
       ...card,
@@ -50,7 +51,7 @@ function ContentSection({ card, onCardChange }) {
       },
     });
   };
-
+  
   return (
     <div>
       <div className="bg-secondarybgcolor rounded-xl p-4 sm:p-6 lg:p-4 xl:p-6">
@@ -71,12 +72,12 @@ function ContentSection({ card, onCardChange }) {
               </button>
             </>
           ))}
-          <button className="bg-primary px-3 py-2 text-white rounded-xl border-2 border-primary hover:bg-transparent hover:text-primary">+ Add Page</button>
+          {/* <button className="bg-primary px-3 py-2 text-white rounded-xl border-2 border-primary hover:bg-transparent hover:text-primary">+ Add Page</button> */}
         </div>
 
         {/* Section Content: delegate to children */}
         <div className="space-y-4">
-          {activeSection === 'first' && (
+          {activeSection === 'home' && (
             sectionTypes.map((section) => {
               switch (section.type) {
                 case "links":
@@ -118,43 +119,27 @@ function ContentSection({ card, onCardChange }) {
                       photoSection={card.content.photoSections}
                       onChange={(field, value) => updateField("photoSections", field, value)}
                     />
-                    // <PhotosSection
-                    //   key={section.type}
-                    //   section={{
-                    //     id: "photoSection",
-                    //     data: card.content.photoSections,
-                    //     enabled: card.content.photoSections?.isEnabled ?? true,
-                    //   }}
-                    //   onUpdate={(id, updatedData) => updateField("photoSections", null, updatedData)}
-                    //   onToggle={(id, enabled) =>
-                    //     updateField("photoSections", "isEnabled", enabled)
-                    //   }
-                    // />
-
                   );
                 default:
                   return null;
               }
             })
           )}
-          {activeSection === 'second' && (
-            <LinkSection
-              linkSection={card.content.linksSection}
-              onChange={(field, value) => updateField("linksSection", field, value)}
+          {activeSection === 'about' && (
+            <AboutTab
+              contentAbout={card.contentAbout}
+              onChange={(updatedAbout) =>
+                onCardChange({ ...card, contentAbout: updatedAbout })
+              }
             />
           )}
 
-          {activeSection === 'third' && (
-            <LinkSection
-              linkSection={card.content.linksSection}
-              onChange={(field, value) => updateField("linksSection", field, value)}
-            />
-          )}
-          {activeSection === 'fourth' && (
-            <LinkSection
-              linkSection={card.content.linksSection}
-              onChange={(field, value) => updateField("linksSection", field, value)}
-            />
+          {activeSection === 'certificates' && (
+            <CertificateTab
+              certificate={card.certificate}
+              onChange={(updatedCertificate) =>
+                onCardChange({ ...card, certificate: updatedCertificate })
+              } />
           )}
         </div>
       </div>

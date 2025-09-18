@@ -8,8 +8,11 @@ import ContentSection from './Tabs/ContentSection';
 import StylesSection from './Tabs/StylesSection';
 import SettingsSection from './Tabs/SettingsSection';
 import { showToast } from "../../components/toast";
+import { useNavigate } from "react-router-dom";
+import { ShareModal } from "./components/ShareModal";
 
 const CardDesigner = () => {
+  const navigate = useNavigate();
   const { user } = useContext(AuthContext);
   const [card, setCard] = useState({
     about: {
@@ -57,40 +60,15 @@ const CardDesigner = () => {
 
     fetchCard();
   }, []);
-  // //console.log("Card", card);
+  const [isOpen, setIsOpen] = useState(false);
 
   const [activeTab, setActiveTab] = useState("about");
 
-  // const tabsConfig = [
-  //   {
-  //     id: "editor",
-  //     label: "About",
-  //     icon: <CreditCard size={18} />,
-  //     roles: ["student"],
-  //   },
-  //   {
-  //     id: "editor",
-  //     label: "Content",
-  //     icon: <CreditCard size={18} />,
-  //     roles: ["student"],
-  //   },
-  //   {
-  //     id: "editor",
-  //     label: "Styles",
-  //     icon: <CreditCard size={18} />,
-  //     roles: ["student"],
-  //   },
-  //   {
-  //     id: "editor",
-  //     label: "Settings",
-  //     icon: <CreditCard size={18} />,
-  //     roles: ["student"],
-  //   },
-  // ];
+
   const tabsConfig = [
     {
       id: "about",
-      label: "About",
+      label: "Profile",
       icon: <User size={16} />,
       roles: ["student", "admin"],
     },
@@ -118,15 +96,13 @@ const CardDesigner = () => {
     (tab) => user && tab.roles.includes(user.role)
   );
 
-  const handleSaveCard = () => {
-    showToast("Card saved!", "top-center", 10000, "dark");
+  const handleViewCard = () => {
+    const shareUrl = `/cardview?id=${card._id}`;
+    navigate(shareUrl);
   };
 
   const handleShareCard = () => {
-    const shareUrl = `${window.location.origin}/cardview/${card.id}`;
-    window.navigator.clipboard.writeText(shareUrl).then(() => {
-      showToast("Share link copied to clipboard!", "top-center", 10000, "dark");
-    });
+    setIsOpen(true);
   };
 
   return (
@@ -141,10 +117,10 @@ const CardDesigner = () => {
 
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
-                  onClick={handleSaveCard}
+                  onClick={handleViewCard}
                   className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-headcolor cursor-pointer"
                 >
-                  <Save size={18} /> Save Card
+                  <Eye size={18} /> View Card
                 </button>
                 <button
                   onClick={handleShareCard}
@@ -167,7 +143,7 @@ const CardDesigner = () => {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center gap-2 px-4 py-3 font-medium font-poppins ${activeTab === tab.id
+                    className={`flex cursor-pointer items-center gap-2 px-4 py-3 font-medium font-poppins ${activeTab === tab.id
                       ? 'bg-activecolor text-primary border-b-2 border-primary'
                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                       }`}
@@ -221,6 +197,9 @@ const CardDesigner = () => {
           </div>
         </div>
       </div>
+      {isOpen && (
+        <ShareModal card={card} onClose={() => setIsOpen(false)} />
+      )}
     </>
   );
 }

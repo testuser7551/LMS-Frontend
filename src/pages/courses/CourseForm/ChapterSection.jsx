@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Video,
   Music,
@@ -18,6 +18,9 @@ const lectureIcons = {
   Quiz: <HelpCircle className="w-5 h-5 text-primary" />,
 };
 import { ChevronDown, ChevronUp } from "lucide-react";
+import ErrorModal from "../Components/ErrorModal";
+import ConfirmModal from "../Components/ConfrimModal";
+
 const ChapterSection = ({
   chapters,
   setCurrentChapterTitle,
@@ -29,7 +32,6 @@ const ChapterSection = ({
   onDeleteLesson,
   editingLesson,
   setEditingLesson,
-  
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newChapterTitle, setNewChapterTitle] = useState("");
@@ -37,12 +39,16 @@ const ChapterSection = ({
   const [openIndex, setOpenIndex] = useState(0);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editChapterIndex, setEditChapterIndex] = useState(null);
-  useEffect(() => {
-    if (chapters.length > 0) {
-      setOpenIndex(0); // open the first chapter whenever chapters are loaded
-    }
-  }, [chapters]);
-  
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [chapterToDelete, setChapterToDelete] = useState(null);
+
+  const [isErrorOpen, setIsErrorOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const showError = (msg) => {
+    setErrorMessage(msg);
+    setIsErrorOpen(true);
+  };
+
   const onEditLesson = (chapter, lesson) => {
     setCurrentChapterTitle(chapter.chapterTitle); // pass current chapter
     setEditingLesson(lesson); // set the lesson to edit
@@ -68,26 +74,58 @@ const ChapterSection = ({
     setNewChapterTitle("");
   };
 
+  const handleCancel = () => {
+    setChapterToDelete(null);
+    setConfirmModalOpen(false);
+  };
+
+  const handleDeleteConfirmed = async () => {
+    if (!chapterToDelete) return;
+
+    try {
+      await deleteChapter(chapterToDelete);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setChapterToDelete(null);
+      setConfirmModalOpen(false);
+    }
+  };
+
   const saveChapter = () => {
-    if (!newChapterTitle.trim()) return alert("Chapter title required");
+    if (!newChapterTitle.trim()) return showError("Chapter title required");
 
     if (isEditMode) {
-      // Update existing chapter
       const index = editChapterIndex;
       updateChapter(index, newChapterTitle.trim());
     } else {
-      // Add new chapter
       addChapter(newChapterTitle.trim());
-      setOpenIndex(chapters.length);
+      // Don't set openIndex here because state updates asynchronously
     }
 
     setNewChapterTitle("");
     setIsModalOpen(false);
   };
 
+  // Toggle open/close dropdown
   const toggleDropdown = (index) => {
     setOpenIndex(openIndex === index ? null : index);
   };
+
+  // Open the first chapter when the page loads and chapters are present
+  useEffect(() => {
+    if (chapters.length > 0 && openIndex === null) {
+      setOpenIndex(0);
+    }
+  }, [chapters]);
+
+  // Open the last chapter when a new chapter is added
+  useEffect(() => {
+    if (!isEditMode && chapters.length > 0) {
+      setOpenIndex(chapters.length - 1);
+    }
+  }, [chapters.length]);
+
   return (
     <div>
       <div className="w-full bg-white flex items-center justify-between">
@@ -147,7 +185,7 @@ const ChapterSection = ({
                 className={`px-4 py-2 rounded-lg text-white transition bg-secondary hover:bg-primary cursor-pointer `}
                 onClick={() => {
                   if (!newChapterTitle.trim())
-                    return alert("Enter a chapter title");
+                    return showError("Enter a chapter title");
                   saveChapter();
                   setSavedOnce(true);
                   closeModal();
@@ -196,13 +234,8 @@ const ChapterSection = ({
                     </button>
                     <button
                       onClick={() => {
-                        if (
-                          window.confirm(
-                            "Are you sure you want to delete this chapter?"
-                          )
-                        ) {
-                          deleteChapter(chapters[index]._id);
-                        }
+                        setChapterToDelete(chapters[index]._id);
+                        setConfirmModalOpen(true);
                       }}
                       className="p-1 hover:bg-gray-200 rounded"
                       title="Delete Chapter"
@@ -303,6 +336,30 @@ const ChapterSection = ({
           <p className="text-gray-500 italic">No chapters added yet.</p>
         )}
       </div>
+      <ErrorModal
+        isOpen={isErrorOpen}
+        message={errorMessage}
+        onClose={() => setIsErrorOpen(false)}
+      />
+      <ConfirmModal
+        isOpen={confirmModalOpen}
+        title="Delete Chapter"
+        message="Are you sure you want to delete this chapter?"
+        buttons={[
+          {
+            text: "Cancel",
+            onClick: handleCancel,
+            color: "bg-gray-200",
+            textColor: "text-gray-700",
+          },
+          {
+            text: "Delete",
+            onClick: handleDeleteConfirmed,
+            color: "bg-red-600",
+          },
+        ]}
+        onClose={handleCancel}
+      />
     </div>
   );
 };

@@ -11,6 +11,7 @@ import {
 import CustomDropdown from "../Components/CustomDropdown";
 import TextSections from "./TextSection";
 import QuizSection from "./QuizSection";
+import ErrorModal from "../Components/ErrorModal";
 
 
 const lectureTypes = [
@@ -97,35 +98,45 @@ const LessonModal = ({
 
   const [error, setError] = useState("");
 
+
+  
+  const [isErrorOpen, setIsErrorOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const showError = (msg) => {
+    setErrorMessage(msg);
+    setIsErrorOpen(true);
+  };
+
+
   const quizSectionRef = useRef();
   if (!open) return null;
 
   const saveLesson = () => {
-    if (!lesson.lessonName.trim()) return alert("Lesson name required");
-    if (!lesson.lessonDescription.trim()) return alert("Lesson  Description name required");
-    if (!lesson.lectureType) return alert("Lecture type required");
+    if (!lesson.lessonName.trim()) return showError("Lesson name required");
+    if (!lesson.lessonDescription.trim()) return showError("Lesson  Description name required");
+    if (!lesson.lectureType) return showError("Lecture type required");
     if (lesson.lectureType === "Video") {
       if (!lesson.file && !lesson.resourceURL.trim()) {
-        return alert("Either file or resource URL is required for Video");
+        return showError("Either file or resource URL is required for Video");
       }
     } else if (lesson.lectureType === "PDF") {
       if (!lesson.file) {
-        return alert("File is required for PDF");
+        return showError("File is required for PDF");
       }
     } else if (lesson.lectureType === "Audio") {
       if (!lesson.file) {
-        return alert("File is required for Audio");
+        return showError("File is required for Audio");
       }
     }    
     if (lesson.lectureType === "Quiz") {
       const error = quizSectionRef.current.validateQuestions();
       if (error) {
-        alert(error);
+        showError(error);
         return;
       }
     }
     if (lesson.lectureType === "Text" && lesson.sections.length === 0)
-      return alert("Add at least one text section");
+      return showError("Add at least one text section");
     // onSave(lesson);
     if (editingLesson?._id) {
       // Existing lesson → update
@@ -386,6 +397,11 @@ const LessonModal = ({
           </div>
         </div>
       </div>
+      <ErrorModal
+        isOpen={isErrorOpen}
+        message={errorMessage}
+        onClose={() => setIsErrorOpen(false)}
+      />
     </div>
   );
 };

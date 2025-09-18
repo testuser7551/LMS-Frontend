@@ -8,7 +8,6 @@ const API_BASE = import.meta.env.VITE_API_BASE;
 const BannerPhoto = ({ bannerFile, bannerPreview, handleBannerChange }) => {
   const handleSave = async () => {
     try {
-      console.log(bannerFile)
       const formData = new FormData();
       if (bannerFile && bannerFile !== "") {
         // new file upload

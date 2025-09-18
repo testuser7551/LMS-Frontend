@@ -11,7 +11,6 @@ const EnrollmentList = () => {
   const loadEnrollments = async () => {
     try {
       const response = await fetchEnrollments();
-      console.log(response);
       setEnrollments(response);
     } catch (error) {
       console.error("Error fetching enrollments:", error);

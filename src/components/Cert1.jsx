@@ -1,27 +1,76 @@
-import React, { useRef } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { useLocation } from "react-router-dom";
+import { markCourseCompletedAPI } from "../api/courses/courses.js";
+
 const Cert1 = () => {
   const certRef = useRef(null);
+
+  const [message, setMessage] = useState("");
+  const [completedData, setCompletedData] = useState(null);
 
   const location = useLocation();
 
   const { details } = location.state || {};
 
+  useEffect(() => {
+    const markCourseCompleted = async () => {
+      try {
+        const element = certRef.current;
+        const canvas = await html2canvas(element, { scale: 2 });
+        // const imgData = canvas.toDataURL("image/png");
+        const imgBlob = await new Promise((resolve) =>
+          canvas.toBlob(resolve, "image/png", 1.0) // use PNG (or "image/jpeg")
+          );
+
+        // const pdf = new jsPDF("landscape", "pt", [
+        //   element.offsetWidth,
+        //   element.offsetHeight,
+        // ]);
+        // pdf.addImage(
+        //   imgData,
+        //   "PNG",
+        //   0,
+        //   0,
+        //   element.offsetWidth,
+        //   element.offsetHeight
+        // );
+
+        // // Convert PDF to Blob
+        // const pdfBlob = pdf.output("blob");
+
+        // Create FormData and append data
+        const formData = new FormData();
+        formData.append("userId", details.userId);
+        formData.append("courseId", details.courseId);
+        // formData.append("certificate", pdfBlob, "certificate.pdf");
+        formData.append("certificate", imgBlob, `${details.course}_certificate.png`); 
+
+        const data = await markCourseCompletedAPI(formData);
+      //  console.log(data);
+        if (data.success) {
+          setMessage("Course marked as completed with certificate!");
+          setCompletedData(data.completedCourse);
+        } else {
+          setMessage(data.message || "Failed to mark course completed.");
+        }
+      } catch (error) {
+        console.error(
+          "Error marking course completed:",
+          error.response?.data || error.message
+        );
+        setMessage("An error occurred while marking course completed.");
+      }
+    };
+
+    if (details && details.userId && details.courseId) {
+      markCourseCompleted();
+    }
+  }, [details]);
   if (!details) {
     return <div>No details found!</div>;
   }
-  // const details = {
-  //   name: "John Doe",
-  //   course: "Full Stack Web Development",
-  //   organization: "LMS Academy",
-  //   day: "11 Sept",
-  //   organizer: "Mr. Sharma",
-  //   director: "Mr. Singh",
-  //   year: "2025",
-  // };
-
   // 📥 Download as PDF
   const downloadPDF = async () => {
     const element = certRef.current;
@@ -102,7 +151,7 @@ const Cert1 = () => {
           </p>
           <h2
             style={{
-              textAlign:"center",
+              textAlign: "center",
               marginTop: "12px",
               fontSize: "22px",
               color: "#2A3033",

@@ -76,7 +76,7 @@ const BasicDetails = ({ basicDetails, onChange }) => {
           <h2 className="text-lg font-semibold text-[var(--color-primary)]">
             Basic Details
           </h2>
-          <div className="flex items-center space-x-2">
+          {/* <div className="flex items-center space-x-2">
             <span className="text-sm text-[var(--color-subtext)]">
               Card Visibility
             </span>
@@ -94,7 +94,7 @@ const BasicDetails = ({ basicDetails, onChange }) => {
                 after:transition-all peer-checked:after:translate-x-full"
               ></div>
             </label>
-          </div>
+          </div> */}
         </div>
 
         {/* 2-column form */}

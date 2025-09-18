@@ -88,26 +88,55 @@ const ThemeStyle = ({ card, onChange }) => {
   //   }
   // };
 
+  // const handleSave = async () => {
+  //   if (!selectedTheme) return;
+
+  //   const themeData = {
+  //     themeName: selectedTheme,
+  //     themeId: themes[selectedTheme]?._id || null, // preset theme ID if exists
+  //     primaryColor: customColors.primaryColor,
+  //     secondaryColor: customColors.secondaryColor,
+  //     territoryColor: customColors.territoryColor,
+  //     backgroundColor: customColors.backgroundColor,
+  //     textColor: customColors.textColor,
+  //   };
+
+  //   try {
+  //     const res = await saveThemesSection(themeData);
+  //     showToast(`✅ Themes saved successfully: ${res?.message || themeData.themeName}`);
+  //   } catch (err) {
+  //     //console.error("Error saving themes:", err);
+  //   }
+  // };
   const handleSave = async () => {
-    if (!selectedTheme) return;
+  if (!selectedTheme) return;
 
-    const themeData = {
-      themeName: selectedTheme,
-      themeId: themes[selectedTheme]?._id || null, // preset theme ID if exists
-      primaryColor: customColors.primaryColor,
-      secondaryColor: customColors.secondaryColor,
-      territoryColor: customColors.territoryColor,
-      backgroundColor: customColors.backgroundColor,
-      textColor: customColors.textColor,
+  let themeData;
+
+  if (selectedTheme === "Custom") {
+    themeData = {
+      themeName: "Custom",
+      themeId: null,
+      ...customColors,
     };
+  } else {
+    const themeValues = themes[selectedTheme] || {};
+    themeData = {
+      themeName: selectedTheme,
+      themeId: themeValues._id || null,
+      ...themeValues,
+    };
+  }
 
-    try {
-      const res = await saveThemesSection(themeData);
-      showToast(`✅ Themes saved successfully: ${res?.message || themeData.themeName}`);
-    } catch (err) {
-      //console.error("Error saving themes:", err);
-    }
-  };
+  try {
+    const res = await saveThemesSection(themeData); // ✅ only payload
+    showToast(`✅ Themes saved successfully: ${res?.message || themeData.themeName}`);
+  } catch (err) {
+    showToast("❌ Error saving themes", "top-center", 5000, "dark");
+  }
+};
+
+
 
 
   // Handle custom color change
@@ -148,7 +177,7 @@ const ThemeStyle = ({ card, onChange }) => {
               onClick={() => handleThemeSelect(theme)}
               className={`min-w-[120px] cursor-pointer h-36 rounded-2xl border flex flex-col items-center justify-between transition-all duration-300 transform hover:scale-105 hover:shadow-lg`}
               style={{
-                borderColor: 
+                borderColor:
                   selectedTheme === theme
                     ? "var(--color-primary)"
                     : "transparent",

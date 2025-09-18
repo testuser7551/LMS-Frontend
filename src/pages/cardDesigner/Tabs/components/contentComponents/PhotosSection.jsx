@@ -315,7 +315,7 @@ const PhotosSection = ({ photoSection, onChange }) => {
       // onChange("imgUrls", updated.imgUrls);
       alert("Photos uploaded");
     } catch (err) {
-      console.error("Photos save failed:", err);
+      // console.error("Photos save failed:", err);
       alert("Failed to save photos");
     } finally {
       setUploading(false);
@@ -346,11 +346,10 @@ const PhotosSection = ({ photoSection, onChange }) => {
       alert("Photos deleted");
 
     } catch (err) {
-      console.error("Delete photo failed:", err);
+      // console.error("Delete photo failed:", err);
       alert("Failed to delete photo");
     }
   };
-  console.log(photoSection)
   return (
     <div className="bg-[var(--color-bgcolor)] rounded-lg p-4 mt-4 shadow border border-[var(--color-secondarybgcolor)]">
       {/* Header */}

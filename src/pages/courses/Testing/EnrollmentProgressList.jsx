@@ -11,7 +11,6 @@ const EnrollmentProgressList = () => {
   const fetchProgress = async () => {
     try {
       const response = await fetchProgressAll();
-      console.log(response);
       setProgressList(response);
     } catch (error) {
       console.error("Error fetching course progress:", error);

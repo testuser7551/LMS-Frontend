@@ -12,7 +12,6 @@ const BASE_URL = `${API_BASE}/api/courses`;
 export const fetchCoursesAPI = async () => {
     try {
         const response = await api.get(BASE_URL);
-        console.log("Courses fetched:", response.data);
         return response.data.courses || [];
     } catch (error) {
         console.error("Error fetching courses:", error.response?.data || error.message);
@@ -24,7 +23,6 @@ export const fetchCoursesAPI = async () => {
 export const fetchCourseByIdAPI = async (courseId) => {
     try {
         const response = await api.get(`${BASE_URL}/${courseId}`);
-        console.log("Course fetched:", response.data);
         return response.data.course;
     } catch (error) {
         console.error("Error fetching course:", error.response?.data || error.message);
@@ -35,14 +33,10 @@ export const fetchCourseByIdAPI = async (courseId) => {
 // Save new course
 export const saveCourseDetailsAPI = async (formData) => {
     try {
-        console.log("Saving course:");
-        for (let pair of formData.entries()) console.log(pair[0], pair[1]);
 
         const response = await api.post(BASE_URL, formData, {
             headers: { "Content-Type": "multipart/form-data" },
         });
-
-        console.log("Course saved:", response.data);
         return response.data;
     } catch (error) {
         console.error("Error saving course:", error.response?.data || error.message);
@@ -53,14 +47,11 @@ export const saveCourseDetailsAPI = async (formData) => {
 // Update existing course
 export const updateCourseDetailsAPI = async (courseId, formData) => {
     try {
-        console.log("Updating course:");
-        for (let pair of formData.entries()) console.log(pair[0], pair[1]);
 
         const response = await api.put(`${BASE_URL}/${courseId}`, formData, {
             headers: { "Content-Type": "multipart/form-data" },
         });
 
-        console.log("Course updated:", response.data);
         return response.data;
     } catch (error) {
         console.error("Error updating course:", error.response?.data || error.message);
@@ -72,7 +63,6 @@ export const updateCourseDetailsAPI = async (courseId, formData) => {
 export const deleteCourseAPI = async (courseId) => {
     try {
         const response = await api.delete(`${BASE_URL}/${courseId}`);
-        console.log("Course deleted:", response.data);
         return response.data;
     } catch (error) {
         console.error("Error deleting course:", error.response?.data || error.message);
@@ -88,7 +78,6 @@ export const deleteCourseAPI = async (courseId) => {
 export const saveChapterAPI = async (courseId, chapterTitle) => {
     try {
         const response = await api.post(`${BASE_URL}/${courseId}/chapter`, { chapterTitle });
-        console.log("Chapter saved:", response.data);
         return response.data;
     } catch (error) {
         console.error("Error saving chapter:", error.response?.data || error.message);
@@ -136,14 +125,10 @@ export const saveLessonAPI = async (courseId, chapterId, lessonData) => {
             else if (value !== undefined) formData.append(key, value);
         });
 
-        console.log("Saving lesson:");
-        for (let pair of formData.entries()) console.log(pair[0], pair[1]);
-
         const response = await api.post(`${BASE_URL}/${courseId}/chapter/${chapterId}/lesson`, formData, {
             headers: { "Content-Type": "multipart/form-data" },
         });
 
-        console.log("Lesson saved:", response.data);
         return response.data;
     } catch (error) {
         console.error("Error saving lesson:", error.response?.data || error.message);
@@ -154,9 +139,7 @@ export const saveLessonAPI = async (courseId, chapterId, lessonData) => {
 // Update lesson
 export const updateLessonAPI = async (courseId, chapterId, lessonId, updatedData) => {
     try {
-        console.log("Updating lesson:", { courseId, chapterId, lessonId, updatedData });
         const response = await api.put(`${BASE_URL}/${courseId}/chapters/${chapterId}/lessons/${lessonId}`, updatedData);
-        console.log("Lesson updated:", response.data);
         return response.data;
     } catch (error) {
         console.error("Error updating lesson:", error.response?.data || error.message);
@@ -167,9 +150,7 @@ export const updateLessonAPI = async (courseId, chapterId, lessonId, updatedData
 // Delete lesson
 export const deleteLessonAPI = async (courseId, chapterId, lessonId) => {
     try {
-        console.log(`Deleting lesson: ${courseId}, ${chapterId}, ${lessonId}`);
         const response = await api.delete(`${BASE_URL}/${courseId}/chapters/${chapterId}/lessons/${lessonId}`);
-        console.log("Lesson deleted:", response.data);
         return response.data;
     } catch (error) {
         console.error("Error deleting lesson:", error.response?.data || error.message);
@@ -192,5 +173,46 @@ export const publishFullCourse = async (courseId) => {
             // Network or other error
             return { success: false, message: error.message || "Something went wrong" };
         }
+    }
+};
+
+
+// Get enrolled count for a specific course
+export const getEnrolledCourseCountAPI = async (courseId) => {
+    try {
+        const response = await api.get(`${BASE_URL}/enrollcoursescount/${courseId}`);
+        return response.data; // { success: true, enrolledCount: ... }
+    } catch (error) {
+        console.error("Error fetching enrolled count:", error.response?.data || error.message);
+        throw error;
+    }
+};
+
+
+
+// Mark course as completed
+export const markCourseCompletedAPI = async (formData) => {
+    try {
+        const response = await api.post(`${BASE_URL}/completed`, formData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+            },
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching enrolled count:", error.response?.data || error.message);
+        throw error;
+    }
+};
+
+
+// Fetch completed courses for a specific user
+export const getCompletedCoursesAPI = async (userId) => {
+    try {
+        const response = await api.get(`${BASE_URL}/completed/user/${userId}`);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching completed courses:", error.response?.data || error.message);
+        throw error;
     }
 };

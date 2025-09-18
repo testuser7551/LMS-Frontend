@@ -14,6 +14,7 @@ import {
   updateLessonAPI,
   fetchCourseByIdAPI,
   publishFullCourse,
+  getEnrolledCourseCountAPI,
 } from "../../../api/courses/courses";
 import FileDropzone from "../Components/FileDropzone";
 import ChapterSection from "./ChapterSection";
@@ -25,6 +26,7 @@ import ErrorModal from "../Components/ErrorModal";
 import Testing from "../Testing/Testing";
 import { useLocation } from "react-router-dom";
 import ViewLessonModal from "./ViewLessonModal";
+import ConfirmModal from "../Components/ConfrimModal";
 const API_BASE = import.meta.env.VITE_API_BASE;
 
 const CourseForm = () => {
@@ -40,10 +42,15 @@ const CourseForm = () => {
     description: "",
     level: "",
     instructor: "",
+    tags: [],
+    tagsInput: "",
     image: null,
     category: "",
     chapters: [],
   });
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [confirmMessage, setConfirmMessage] = useState("");
+  const [onConfirmAction, setOnConfirmAction] = useState(() => () => {});
 
   const [savedCourse, setSavedCourse] = useState(false);
   const [categories, setCategories] = useState([]);
@@ -53,14 +60,19 @@ const CourseForm = () => {
   const navigate = useNavigate();
   const [viewLesson, setViewLesson] = useState(null);
   const [editingLesson, setEditingLesson] = useState(null);
+  const [enrolledCount, setEnrolledCount] = useState(0);
 
   useEffect(() => {
     const getCourse = async () => {
       if (!courseId) return; // If no courseId, do nothing
 
       try {
+        const data2 = await getEnrolledCourseCountAPI(courseId);
+        if (data2.success) {
+          setEnrolledCount(data2.enrolledCount);
+        }
+
         const data = await fetchCourseByIdAPI(courseId);
-        console.log("Fetched course data:", data);
 
         // Set the fetched data to state
         setCourse({
@@ -68,8 +80,10 @@ const CourseForm = () => {
           description: data.description || "",
           level: data.level || "",
           instructor: data.instructor || "",
+          tags: data.tags || [],
+          tagsInput: (data.tags || []).map((tag) => `#${tag}`).join(" "),
           image: data.image || null,
-          category: data.category?._id || "",
+          category: data.category || "",
           chapters: data.chapters || [],
         });
         setbackendcoursedata(data); // optionally store full backend data
@@ -88,7 +102,23 @@ const CourseForm = () => {
     }
   }, [courseId]);
 
-  
+  const handleTagsInput = (input) => {
+    setCourse((prev) => ({
+      ...prev,
+      tagsInput: input,
+      tags: input
+        .split(/[\s,]+/) // split by space or comma
+        .map((tag) => tag.replace(/^#/, "").trim()) // remove # if any
+        .filter((tag) => tag.length > 0),
+    }));
+  };
+
+  const openConfirmModal = (message, action) => {
+    setConfirmMessage(message);
+    setOnConfirmAction(() => action);
+    setConfirmModalOpen(true);
+  };
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
 
@@ -132,6 +162,10 @@ const CourseForm = () => {
     if (!course.level) newErrors.level = "Level is required";
     if (!course.instructor.trim())
       newErrors.instructor = "Instructor is required";
+    if (!course.tags || course.tags.length === 0) {
+      newErrors.tags = "Tags are required";
+    }
+
     // if (!course.image) newErrors.image = "Image is required";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -153,18 +187,23 @@ const CourseForm = () => {
     formData.append("description", course.description);
     formData.append("level", course.level);
     formData.append("instructor", course.instructor);
+    formData.append("tags", JSON.stringify(course.tags));
     formData.append("image", course.image);
     formData.append("chapters", JSON.stringify(course.chapters));
 
     try {
       if (validate()) {
-        console.log("Form data is valid", course);
-
         let result;
         if (courseId) {
           // Edit mode
-          result = await updateCourseDetailsAPI(courseId, formData);
-          showSuccess("Course updated successfully!");
+          if (enrolledCount > 0) {
+            showError(
+              "This course cannot be updated because students are already enrolled."
+            );
+          } else {
+            result = await updateCourseDetailsAPI(courseId, formData);
+            showSuccess("Course updated successfully!");
+          }
         } else {
           // Create mode
           result = await saveCourseDetailsAPI(formData);
@@ -177,246 +216,401 @@ const CourseForm = () => {
       }
     } catch (error) {
       console.error("Failed to save/update course:", error);
-      alert("Error saving or updating course");
+      showError("Error saving or updating course");
     }
   };
 
   // Add Chapter
   const addChapter = async (title) => {
-    if (!title.trim()) return alert("Chapter title required");
+    if (!title.trim()) return showError("Chapter title required");
     let chapterTitle = title;
 
     // Get the saved course data
-    if (!backendcoursedata?._id) return alert("Course not saved yet");
+    if (!backendcoursedata?._id) return showError("Course not saved yet");
     const courseId = backendcoursedata._id;
 
-    console.log(courseId);
     try {
-      const saved = await saveChapterAPI(courseId, chapterTitle); // assuming course._id is available
-      console.log(saved.success, saved.chapter);
-      if (saved.success) {
-        // Update local course state
-        // setCourse((prevCourse) => ({
-        //   ...prevCourse,
-        //   chapters: [...prevCourse.chapters, saved.chapter], // Use saved.chapter from API response
-        // }));
+      if (enrolledCount > 0) {
+        showError(
+          "This course cannot be updated because students are already enrolled."
+        );
+      } else {
+        const saved = await saveChapterAPI(courseId, chapterTitle); // assuming course._id is available
+        if (saved.success) {
+          // Update local course state
+          // setCourse((prevCourse) => ({
+          //   ...prevCourse,
+          //   chapters: [...prevCourse.chapters, saved.chapter], // Use saved.chapter from API response
+          // }));
 
-        setCourse((prevCourse) => {
-          const updatedChapters = [...prevCourse.chapters, saved.chapter];
-          setOpenIndex(updatedChapters.length - 1);
-          return {
-            ...prevCourse,
-            chapters: updatedChapters,
-          };
-        });
+          setCourse((prevCourse) => {
+            const updatedChapters = [...prevCourse.chapters, saved.chapter];
+            setOpenIndex(updatedChapters.length - 1);
+            return {
+              ...prevCourse,
+              chapters: updatedChapters,
+            };
+          });
 
-        // Also update backendcoursedata state
-        setbackendcoursedata((prevBackendCourse) => ({
-          ...prevBackendCourse,
-          chapters: [...prevBackendCourse.chapters, saved.chapter], // Add to backend data
-        }));
+          // Also update backendcoursedata state
+          setbackendcoursedata((prevBackendCourse) => ({
+            ...prevBackendCourse,
+            chapters: [...prevBackendCourse.chapters, saved.chapter], // Add to backend data
+          }));
+        }
+        showSuccess("Chapter added successfully!");
       }
-      console.log("Before update:", backendcoursedata);
-      showSuccess("Chapter added successfully!");
     } catch (error) {
-      alert("Failed to add chapter");
+      showError("Failed to add chapter");
     }
   };
   const updateChapter = async (index, newTitle) => {
-    if (!newTitle.trim()) return alert("Chapter title required");
+    if (!newTitle.trim()) return showError("Chapter title required");
 
-    if (!backendcoursedata?._id) return alert("Course not saved yet");
+    if (!backendcoursedata?._id) return showError("Course not saved yet");
     const courseId = backendcoursedata._id;
     const chapterId = backendcoursedata.chapters[index]._id;
 
     try {
-      const response = await updateChapterAPI(courseId, chapterId, newTitle); // call API
-      if (response.success) {
-        // Update course state
-        setCourse((prevCourse) => {
-          const updatedChapters = [...prevCourse.chapters];
-          updatedChapters[index].chapterTitle = newTitle;
-          return { ...prevCourse, chapters: updatedChapters };
-        });
+      if (enrolledCount > 0) {
+        showError(
+          "This course cannot be updated because students are already enrolled."
+        );
+      } else {
+        const response = await updateChapterAPI(courseId, chapterId, newTitle); // call API
+        if (response.success) {
+          // Update course state
+          setCourse((prevCourse) => {
+            const updatedChapters = [...prevCourse.chapters];
+            updatedChapters[index].chapterTitle = newTitle;
+            return { ...prevCourse, chapters: updatedChapters };
+          });
 
-        // Update backend course state
-        setbackendcoursedata((prevBackendCourse) => {
-          const updatedChapters = [...prevBackendCourse.chapters];
-          updatedChapters[index].chapterTitle = newTitle;
-          return { ...prevBackendCourse, chapters: updatedChapters };
-        });
+          // Update backend course state
+          setbackendcoursedata((prevBackendCourse) => {
+            const updatedChapters = [...prevBackendCourse.chapters];
+            updatedChapters[index].chapterTitle = newTitle;
+            return { ...prevBackendCourse, chapters: updatedChapters };
+          });
 
-        showSuccess("Chapter updated successfully!");
+          showSuccess("Chapter updated successfully!");
+        }
       }
     } catch (error) {
-      alert("Failed to update chapter");
+      showError("Failed to update chapter");
     }
   };
   const deleteChapter = async (chapterId) => {
-    if (!backendcoursedata?._id) return alert("Course not saved yet");
+    if (!backendcoursedata?._id) return showError("Course not saved yet");
     const courseId = backendcoursedata._id;
 
+    const course = backendcoursedata;
+    // 1. Only proceed with confirmation if course is Published
+    // if (course.coursepublished === "Published") {
+    //   // 2. Get all lessons across the course
+    //   const allLessons = course.chapters.flatMap((ch) => ch.lessons);
+
+    //   // 3. Get all published lessons in the course
+    //   const publishedLessons = allLessons.filter(
+    //     (lesson) => lesson.published === "Published"
+    //   );
+
+    //   // 4. Find the chapter to be deleted
+    //   const chapterToDelete = course.chapters.find(
+    //     (ch) => ch._id === chapterId
+    //   );
+    //   if (!chapterToDelete) return showError("Chapter not found");
+
+    //   // 5. Get published lessons in this chapter
+    //   const publishedInChapter = chapterToDelete.lessons.filter(
+    //     (lesson) => lesson.published === "Published"
+    //   );
+
+    // 6. If all published lessons are in this chapter → show confirmation
+    // if (
+    //   publishedLessons.length > 0 &&
+    //   publishedLessons.length === publishedInChapter.length
+    // ) {
+    //   const confirmDelete = window.confirm(
+    //     "Deleting this chapter will set the course to Draft. Do you want to proceed?"
+    //   );
+    //   if (!confirmDelete) return;
+    // }
+    // }
     try {
-      const response = await deleteChapterAPI(courseId, chapterId);
-      if (response.success) {
-        // Remove the chapter from backendcoursedata state
-        setbackendcoursedata((prevBackendCourse) => ({
-          ...prevBackendCourse,
-          chapters: prevBackendCourse.chapters.filter(
-            (chapter) => chapter._id !== chapterId
-          ),
-        }));
+      if (enrolledCount > 0) {
+        showError(
+          "This course cannot be updated because students are already enrolled."
+        );
+      } else if (course.coursepublished === "Published") {
+        // 2. Get all lessons across the course
+        const allLessons = course.chapters.flatMap((ch) => ch.lessons);
 
-        // Also update main course state if needed
-        setCourse((prevCourse) => ({
-          ...prevCourse,
-          chapters: prevCourse.chapters.filter(
-            (chapter) => chapter._id !== chapterId
-          ),
-        }));
+        // 3. Get all published lessons in the course
+        const publishedLessons = allLessons.filter(
+          (lesson) => lesson.published === "Published"
+        );
 
-        showSuccess("Chapter deleted successfully!");
+        // 4. Find the chapter to be deleted
+        const chapterToDelete = course.chapters.find(
+          (ch) => ch._id === chapterId
+        );
+        if (!chapterToDelete) return showError("Chapter not found");
+
+        // 5. Get published lessons in this chapter
+        const publishedInChapter = chapterToDelete.lessons.filter(
+          (lesson) => lesson.published === "Published"
+        );
+        if (
+          publishedLessons.length > 0 &&
+          publishedLessons.length === publishedInChapter.length
+        ) {
+          openConfirmModal(
+            "Deleting this chapter will set the course to Draft. Do you want to proceed?",
+            async () => {
+              const response = await deleteChapterAPI(courseId, chapterId);
+              if (response.success) {
+                // Remove the chapter from backendcoursedata state
+                setbackendcoursedata((prevBackendCourse) => ({
+                  ...prevBackendCourse,
+                  chapters: prevBackendCourse.chapters.filter(
+                    (chapter) => chapter._id !== chapterId
+                  ),
+                }));
+
+                // Also update main course state if needed
+                setCourse((prevCourse) => ({
+                  ...prevCourse,
+                  chapters: prevCourse.chapters.filter(
+                    (chapter) => chapter._id !== chapterId
+                  ),
+                }));
+
+                showSuccess("Chapter deleted successfully!");
+              } else {
+                showError("Failed to delete chapter.");
+              }
+            }
+          );
+          return;
+        }
       } else {
-        alert("Failed to delete chapter.");
+        const response = await deleteChapterAPI(courseId, chapterId);
+        if (response.success) {
+          // Remove the chapter from backendcoursedata state
+          setbackendcoursedata((prevBackendCourse) => ({
+            ...prevBackendCourse,
+            chapters: prevBackendCourse.chapters.filter(
+              (chapter) => chapter._id !== chapterId
+            ),
+          }));
+
+          // Also update main course state if needed
+          setCourse((prevCourse) => ({
+            ...prevCourse,
+            chapters: prevCourse.chapters.filter(
+              (chapter) => chapter._id !== chapterId
+            ),
+          }));
+
+          showSuccess("Chapter deleted successfully!");
+        } else {
+          showError("Failed to delete chapter.");
+        }
       }
     } catch (error) {
       console.error("Error deleting chapter:", error);
-      alert("An error occurred while deleting the chapter.");
+      showError("An error occurred while deleting the chapter.");
     }
   };
 
   // Add Lesson
   const addLessonToChapter = async (lesson) => {
     try {
-      console.log(lesson);
       const chapter = course.chapters.find(
         (ch) => ch.chapterTitle === currentChapterTitle
       );
-      if (!chapter) return alert("Chapter not found");
+      if (!chapter) return showError("Chapter not found");
 
-      if (!backendcoursedata?._id) return alert("Course not saved yet");
+      if (!backendcoursedata?._id) return showError("Course not saved yet");
       const courseId = backendcoursedata._id;
 
       const backendChapter = backendcoursedata.chapters.find(
         (ch) => ch.chapterTitle === currentChapterTitle
       );
-      if (!backendChapter) return alert("Backend chapter not found");
+      if (!backendChapter) return showError("Backend chapter not found");
       const chapterId = backendChapter._id;
 
-      console.log("Sending lesson data:", lesson);
+      if (enrolledCount > 0) {
+        showError(
+          "This course cannot be updated because students are already enrolled."
+        );
+      } else {
+        // Save the lesson via API
+        const saved = await saveLessonAPI(courseId, chapterId, lesson);
 
-      // Save the lesson via API
-      const saved = await saveLessonAPI(courseId, chapterId, lesson);
-      console.log("Saved result:", saved.lesson);
+        if (!saved || !saved.lesson) {
+          return showError("Invalid response from server");
+        }
 
-      if (!saved || !saved.lesson) {
-        return alert("Invalid response from server");
+        const newLesson = saved.lesson;
+
+        const updated = course.chapters.map((ch) =>
+          ch._id === chapter._id
+            ? { ...ch, lessons: [...(ch.lessons || []), newLesson] }
+            : ch
+        );
+
+        setCourse({ ...course, chapters: updated });
+
+        showSuccess("Lesson added successfully!");
       }
-
-      const newLesson = saved.lesson;
-
-      const updated = course.chapters.map((ch) =>
-        ch._id === chapter._id
-          ? { ...ch, lessons: [...(ch.lessons || []), newLesson] }
-          : ch
-      );
-
-      setCourse({ ...course, chapters: updated });
-
-      showSuccess("Lesson added successfully!");
     } catch (error) {
       console.error("Error saving lesson:", error);
-      alert("Failed to add lesson");
+      showError("Failed to add lesson");
     }
   };
 
   const updateLessonInChapter = async (lesson) => {
     try {
-      console.log(lesson);
-      const chapter = course.chapters.find(
-        (ch) => ch.chapterTitle === currentChapterTitle
+      const allLessons = course.chapters.flatMap((ch) => ch.lessons);
+
+      // Find how many are published
+      const publishedLessons = allLessons.filter(
+        (l) => l.published === "Published"
       );
-      if (!chapter) return alert("Chapter not found");
 
-      if (!backendcoursedata?._id) return alert("Course not saved yet");
-      const courseId = backendcoursedata._id;
+      // Decide if confirm modal is needed
+      const requiresConfirm =
+        publishedLessons.length === 1 &&
+        lesson.published === "Draft" &&
+        publishedLessons[0]._id === lesson._id;
 
-      const backendChapter = backendcoursedata.chapters.find(
-        (ch) => ch.chapterTitle === currentChapterTitle
-      );
-      if (!backendChapter) return alert("Backend chapter not found");
-      const chapterId = backendChapter._id;
-
-      console.log("Sending lesson data:", lesson);
-      if (lesson._id) {
-        console.log(lesson);
-        console.log(courseId, chapterId, lesson._id, lesson);
-        // Existing lesson → update
-        const updated = await updateLessonAPI(
-          courseId,
-          chapterId,
-          lesson._id,
-          lesson
+      const proceedUpdate = async () => {
+        const chapter = course.chapters.find(
+          (ch) => ch.chapterTitle === currentChapterTitle
         );
-        console.log("Updated lesson:", updated.lesson);
-        // alert("Lesson Updated Successfully");
+        if (!chapter) return showError("Chapter not found");
 
-        const updatedLesson = updated.lesson;
+        if (!backendcoursedata?._id) return showError("Course not saved yet");
+        const courseId = backendcoursedata._id;
 
-        // Update the lessons array properly
-        const updatedChapters = course.chapters.map((ch) =>
-          ch._id === chapter._id
-            ? {
-                ...ch,
-                lessons: ch.lessons.map((l) =>
-                  l._id === updatedLesson._id ? updatedLesson : l
-                ),
-              }
-            : ch
+        const backendChapter = backendcoursedata.chapters.find(
+          (ch) => ch.chapterTitle === currentChapterTitle
         );
+        if (!backendChapter) return showError("Backend chapter not found");
+        const chapterId = backendChapter._id;
 
-        setCourse({ ...course, chapters: updatedChapters });
-        
-        showSuccess("Lesson updated successfully!");
+        if (lesson._id) {
+          if (enrolledCount > 0) {
+            showError(
+              "This course cannot be updated because students are already enrolled."
+            );
+            return;
+          }
+
+          // Existing lesson → update
+          const updated = await updateLessonAPI(
+            courseId,
+            chapterId,
+            lesson._id,
+            lesson
+          );
+
+          if (updated.success) {
+            const updatedLesson = updated.lesson;
+
+            // Update lessons in state
+            const updatedChapters = course.chapters.map((ch) =>
+              ch._id === chapter._id
+                ? {
+                    ...ch,
+                    lessons: ch.lessons.map((l) =>
+                      l._id === updatedLesson._id ? updatedLesson : l
+                    ),
+                  }
+                : ch
+            );
+
+            setCourse({ ...course, chapters: updatedChapters });
+            showSuccess("Lesson updated successfully!");
+          } else {
+            showError("Failed to update lesson.");
+          }
+        } else {
+          // New lesson → add
+          await addLessonToChapter(lesson);
+        }
+      };
+
+      if (requiresConfirm) {
+        openConfirmModal(
+          "This is the only published lesson. Unpublishing it will set the course to Draft. Do you want to proceed?",
+          proceedUpdate
+        );
       } else {
-        // New lesson → add
-        await addLessonToChapter(lesson);
+        await proceedUpdate(); // ✅ run normally
       }
     } catch (err) {
-      alert("Failed to save lesson");
+      showError("Failed to save lesson");
     }
   };
 
   const deleteLesson = async (chapter, lesson) => {
-    if (!window.confirm("Are you sure you want to delete this lesson?")) return;
-
     try {
-      const resp = await deleteLessonAPI(
-        backendcoursedata._id,
-        chapter._id,
-        lesson._id
-      );
-      console.log(resp);
-      // Update frontend state (remove lesson from chapter)
-      const updatedChapters = course.chapters.map((ch) => {
-        if (ch._id === chapter._id) {
-          return {
-            ...ch,
-            lessons: ch.lessons.filter((l) => l._id !== lesson._id),
-          };
-        }
-        return ch;
-      });
+      const allLessons = course.chapters.flatMap((ch) => ch.lessons);
 
-      setCourse({ ...course, chapters: updatedChapters }); // Update your course state
-      alert("Lesson deleted successfully");
+      // Find how many are published
+      const publishedLessons = allLessons.filter(
+        (l) => l.published === "Published"
+      );
+
+      // Decide confirmation message
+      let confirmMessage = "Are you sure you want to delete this lesson?";
+      if (
+        publishedLessons.length === 1 &&
+        publishedLessons[0]._id === lesson._id
+      ) {
+        confirmMessage =
+          "This is the only published lesson. Unpublishing/deleting it will set the course to Draft. Do you want to proceed?";
+      }
+
+      // Open modal and handle delete if confirmed
+      openConfirmModal(confirmMessage, async () => {
+        if (enrolledCount > 0) {
+          showError(
+            "This course cannot be deleted because students are already enrolled."
+          );
+          return;
+        }
+
+        const resp = await deleteLessonAPI(
+          backendcoursedata._id,
+          chapter._id,
+          lesson._id
+        );
+
+        if (resp.success) {
+          // Update frontend state
+          const updatedChapters = course.chapters.map((ch) =>
+            ch._id === chapter._id
+              ? {
+                  ...ch,
+                  lessons: ch.lessons.filter((l) => l._id !== lesson._id),
+                }
+              : ch
+          );
+
+          setCourse({ ...course, chapters: updatedChapters });
+          showSuccess("Lesson deleted successfully!");
+        } else {
+          showError("Failed to delete lesson.");
+        }
+      });
     } catch (error) {
-      alert("Failed to delete lesson.");
+      showError("Failed to delete lesson.");
     }
   };
-
-
-  
 
   const handlePublish = async () => {
     try {
@@ -425,7 +619,6 @@ const CourseForm = () => {
       if (!backendcoursedata?._id)
         return showError("Create Course and then Publish!");
       const courseId = backendcoursedata._id;
-      console.log(courseId);
 
       const data = await publishFullCourse(courseId);
       if (data.success) {
@@ -439,8 +632,6 @@ const CourseForm = () => {
       setLoading(false);
     }
   };
-
-
 
   return (
     <div className="flex flex-col">
@@ -594,6 +785,22 @@ const CourseForm = () => {
 
                   <div>
                     <label className="block mb-2 text-sm font-medium text-gray-700">
+                      Tags
+                    </label>
+                    <input
+                      type="text"
+                      className="border border-gray-300 p-3 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-primary transition-all duration-200"
+                      value={course.tagsInput} // temporary input field value
+                      onChange={(e) => handleTagsInput(e.target.value)}
+                      placeholder="Type tags separated by # or ,"
+                    />
+                    {errors.tags && (
+                      <p className="text-red-500 text-sm mt-1">{errors.tags}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block mb-2 text-sm font-medium text-gray-700">
                       Image
                     </label>
                     <FileDropzone
@@ -683,6 +890,21 @@ const CourseForm = () => {
                   <p className="truncate">
                     <strong>Instructor:</strong> {course.instructor || "-"}
                   </p>
+                  <div className="flex flex-wrap gap-2">
+                    {course.tags && course.tags.length > 0 ? (
+                      course.tags.map((tag, index) => (
+                        <span
+                          key={index}
+                          className="bg-primary text-white px-2 py-1 rounded-full text-sm"
+                        >
+                          #{tag} {/* Add # before each tag */}
+                        </span>
+                      ))
+                    ) : (
+                      <span>-</span>
+                    )}
+                  </div>
+
                   <p>
                     <strong>Level:</strong> {course.level || "-"}
                   </p>
@@ -737,6 +959,28 @@ const CourseForm = () => {
         onClose={() => setIsErrorOpen(false)}
       />
       {/* <Testing /> */}
+      <ConfirmModal
+        isOpen={confirmModalOpen}
+        title="Confirm Action"
+        message={confirmMessage}
+        buttons={[
+          {
+            text: "Cancel",
+            onClick: () => setConfirmModalOpen(false),
+            color: "bg-gray-200",
+            textColor: "text-gray-700",
+          },
+          {
+            text: "Confirm",
+            onClick: () => {
+              onConfirmAction(); // run the passed function
+              setConfirmModalOpen(false);
+            },
+            color: "bg-red-600",
+          },
+        ]}
+        onClose={() => setConfirmModalOpen(false)}
+      />
     </div>
   );
 };

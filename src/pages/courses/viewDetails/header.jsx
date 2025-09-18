@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useContext } from "react";
 import { Clock, BarChart3, Play, X, User } from "lucide-react";
 import { AuthContext } from "../../../context/AuthContext";
-import { getEnrollment, enrollUser } from "../../../api/courses/enroll"; 
+import { getEnrollment, enrollUser } from "../../../api/courses/enroll";
 import { initCourseProgressAPI } from "../../../api/courses/progress";
 import { deleteCourseAPI } from "../../../api/courses/courses";
+import { getEnrolledCourseCountAPI } from "../../../api/courses/courses";
+import ErrorModal from "../Components/ErrorModal";
+import SuccessModal from "../Components/SuccessModal";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 import { useNavigate } from "react-router-dom";
@@ -12,19 +15,58 @@ import { useNavigate } from "react-router-dom";
 const Header = ({ course, setIsEnrolled, isEnrolled }) => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
+
+  const [isErrorOpen, setIsErrorOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const showError = (msg) => {
+    setErrorMessage(msg);
+    setIsErrorOpen(true);
+  };
+
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+
+  const showSuccess = (message) => {
+    setModalMessage(message);
+    setIsModalOpen(true);
+  };
+
+
+  const handleClose = () => {
+    setIsModalOpen(false);
+  };
+
+  
+  const [enrolledCount, setEnrolledCount] = useState(0);
+  useEffect(() => {
+    const fetchEnrollmentCount = async () => {
+      try {
+        const data = await getEnrolledCourseCountAPI(course._id);
+        if (data.success) {
+          setEnrolledCount(data.enrolledCount);
+        }
+      } catch (error) {
+        console.error("Failed to get enrolled count:", error);
+      }
+    };
+
+    if (course && course._id) {
+      fetchEnrollmentCount();
+    }
+  }, [course]);
+
   useEffect(() => {
     const checkEnrollment = async () => {
       try {
         const data = await getEnrollment(user._id);
-        console.log(data);
 
         const enrollment = data.enrollments.find(
           (e) => e.course._id === course._id
         );
-        console.log(enrollment);
 
         if (enrollment) {
-          console.log(enrollment.course._id);
           setIsEnrolled(true);
         }
       } catch (error) {
@@ -44,7 +86,7 @@ const Header = ({ course, setIsEnrolled, isEnrolled }) => {
         .length,
     0
   );
-  
+
   const totalMinutes = course.chapters.reduce((sum, chapter) => {
     return (
       sum +
@@ -68,7 +110,7 @@ const Header = ({ course, setIsEnrolled, isEnrolled }) => {
       };
       const enrollResponse = await enrollUser(enrollData);
 
-      alert(enrollResponse.message || "Enrolled successfully!");
+      showSuccess(enrollResponse.message || "Enrolled successfully!");
       setIsEnrolled(true); // Update UI
 
       // 2️⃣ Initialize progress
@@ -79,7 +121,7 @@ const Header = ({ course, setIsEnrolled, isEnrolled }) => {
       const progressResponse = await initCourseProgressAPI(progressData);
     } catch (error) {
       //console.error("Enrollment or progress failed:", error);
-      alert(error.message || "Failed to start course");
+      showError(error.message || "Failed to start course");
     }
   };
 
@@ -88,10 +130,10 @@ const Header = ({ course, setIsEnrolled, isEnrolled }) => {
 
     try {
       await deleteCourseAPI(course._id);
-      alert("Course deleted!");
+      showSuccess("Course deleted!");
       navigate("/courses"); // Redirect to courses list or another page after deletion
     } catch (error) {
-      alert(
+      showError(
         error.response?.data?.message ||
           error.message ||
           "Failed to delete course."
@@ -142,16 +184,19 @@ const Header = ({ course, setIsEnrolled, isEnrolled }) => {
               <div className="flex gap-3">
                 {user.role === "admin" ? (
                   <>
-                    <button
-                      className="flex items-center gap-2 px-4 py-2  cursor-pointer rounded-lg text-sm bg-secondary text-white hover:bg-secondary/80 transition"
-                      onClick={() =>
-                        navigate("/courses/addcourse", {
-                          state: { courseId: course._id },
-                        })
-                      }
-                    >
-                      Edit Course
-                    </button>
+                    {enrolledCount === 0 && (
+                      <button
+                        className="flex items-center gap-2 px-4 py-2 cursor-pointer rounded-lg text-sm bg-secondary text-white hover:bg-secondary/80 transition"
+                        onClick={() =>
+                          navigate("/courses/addcourse", {
+                            state: { courseId: course._id },
+                          })
+                        }
+                      >
+                        Edit Course
+                      </button>
+                    )}
+
                     <button
                       className="flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg text-sm bg-secondary text-white hover:bg-secondary/80 transition"
                       onClick={handleDelete}
@@ -186,6 +231,16 @@ const Header = ({ course, setIsEnrolled, isEnrolled }) => {
           </div>
         </div>
       </div>
+      <SuccessModal
+        isOpen={isModalOpen}
+        message={modalMessage}
+        onClose={handleClose}
+      />
+      <ErrorModal
+        isOpen={isErrorOpen}
+        message={errorMessage}
+        onClose={() => setIsErrorOpen(false)}
+      />
     </div>
   );
 };

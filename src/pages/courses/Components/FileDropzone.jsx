@@ -70,10 +70,14 @@ export default function FileDropzone({ file, setFile, accept }) {
       {file && (
         <div className="mt-2 flex items-center justify-between bg-gray-50 p-2 rounded-[5px]">
           <div className="text-sm">
-            <strong>{file.name}</strong>
-            {/* <div className="text-xs text-gray-500">
-              {(file.size / 1024).toFixed(1)} KB
-            </div> */}
+            <div>
+              <strong>{typeof file === "object" ? file.name : file}</strong>
+              <div className="text-xs text-gray-500">
+                {typeof file === "object"
+                  ? (file.size / 1024).toFixed(1) + " KB"
+                  : "Size not available"}
+              </div>
+            </div>
           </div>
         </div>
       )}

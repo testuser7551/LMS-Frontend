@@ -6,6 +6,7 @@ import Progress from "./progress";
 import Header from "./header";
 import Lesson from "./lesson";
 import { AuthContext } from "../../../context/AuthContext";
+import ErrorModal from "../Components/ErrorModal";
 
 const Details = () => {
   const location = useLocation();
@@ -18,13 +19,22 @@ const Details = () => {
   if (!courseId) return <div>No course selected.</div>;
   const [isEnrolled, setIsEnrolled] = useState(false);
 
+  const [isErrorOpen, setIsErrorOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const showError = (msg) => {
+    setErrorMessage(msg);
+    setIsErrorOpen(true);
+  };
+
+
   const fetchCourse = async () => {
     try {
       const data = await fetchCourseByIdAPI(courseId);
       setCourse(data);
     } catch (error) {
       //console.error("Failed to fetch course:", error.message);
-      alert("Failed to load course details.");
+      showError("Failed to load course details.");
     }
   };
 
@@ -169,6 +179,11 @@ const Details = () => {
           )}
         </div>
       </div>
+      <ErrorModal
+        isOpen={isErrorOpen}
+        message={errorMessage}
+        onClose={() => setIsErrorOpen(false)}
+      />
     </div>
   );
 };
