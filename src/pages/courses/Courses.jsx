@@ -390,7 +390,7 @@ const Courses = () => {
                     : "text-gray-700 bg-gray-200 hover:bg-primary hover:text-white"
                 }`}
               >
-                Pending Courses
+                Draft Courses
               </button>
             )}
           </div>

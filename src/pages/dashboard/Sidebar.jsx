@@ -58,12 +58,30 @@ const Sidebar = () => {
       tab: "qrcode",
       roles: ["student", "admin"],
     },
+    // {
+    //   icon: CreditCard,
+    //   label: "Card Designer",
+    //   tab: `${user.role === "admin" ? "admincard" : "mycard"}`,
+    //   roles: ["student", "admin"],
+    // },
+
+    // { icon: CreditCard, label: "New Card", tab: "editcard", roles: ["admin"] },
+
     {
       icon: CreditCard,
       label: "Card Designer",
-      tab: `${user.role === "admin" ? "admincard" : "mycard"}`,
-      roles: ["student", "admin"],
+      tab: "mycard",
+      roles: ["student", "admin", "instructor", "mentor"],
     },
+
+    {
+      icon: CreditCard,
+      label: "View Cards",
+      tab: "admincard",
+      roles: ["admin"]
+    },
+
+
     {
       icon: IdCard,
       label: "My Card",
@@ -71,7 +89,6 @@ const Sidebar = () => {
       roles: ["student"],
     },
 
-    { icon: CreditCard, label: "New Card", tab: "editcard", roles: ["admin"] },
     {
       icon: MessageCircle,
       label: "Discussions",
@@ -168,7 +185,7 @@ const Sidebar = () => {
           </ToolTip>
         </div>
       </div>)}
-      {(isCollapsed && isMobileOpen!==true) && (<div className="sm:p-3 flex gap-2 justify-between border-b border-gray-200 flex-wrap">
+      {(isCollapsed && isMobileOpen !== true) && (<div className="sm:p-3 flex gap-2 justify-between border-b border-gray-200 flex-wrap">
         <div className="flex items-center space-x-2 sm:space-x-3">
           <img
             src={user?.avatar || `/assets/images/sidebar/profile.png`}
