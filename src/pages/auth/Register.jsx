@@ -9,8 +9,12 @@ import {showToast} from "../../components/toast.js";
 const Register = () => {
   const navigate = useNavigate();
   const { user, token, setUserContext} = useContext(AuthContext);
+  const schoolId = "TOML-7B0DC9";
+  const schoolObjectId ="68ce4ebb10ca5e6bb67b0dca";
 
   const [formData, setFormData] = useState({
+    schoolId,
+    schoolObjectId,
     name: '',
     email: '',
     password: '',
@@ -69,14 +73,17 @@ const Register = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
       <div className="w-full max-w-md mx-auto bg-white rounded-2xl shadow-2xl p-6 sm:p-8 border border-gray-100">
-        
         {/* Header */}
         <div className="text-center mb-6 sm:mb-8">
           <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-primary to-gray-500 rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
             <UserPlus className="text-white" size={28} />
           </div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 font-outfit">Create Account</h2>
-          <p className="text-gray-600 text-sm sm:text-base font-poppins">Join our learning community today</p>
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 font-outfit">
+            Create Account
+          </h2>
+          <p className="text-gray-600 text-sm sm:text-base font-poppins">
+            Join our learning community today
+          </p>
         </div>
 
         {/* Error */}
@@ -89,11 +96,43 @@ const Register = () => {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+          {/* <div>
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-subtext mb-2 font-poppins"
+            >
+              SchoolId
+            </label>
+            <div className="relative">
+              <User
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-subtext"
+                size={18}
+              />
+              <input
+                type="text"
+                id="schoolId"
+                name="schoolId"
+                value={formData.schoolId}
+                onChange={handleChange}
+                className="w-full pl-10 pr-4 py-2.5 border border-subtext font-poppins rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                placeholder="Enter your School Id"
+                required
+              />
+            </div>
+          </div> */}
           {/* Name */}
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-subtext mb-2 font-poppins">Full Name</label>
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-subtext mb-2 font-poppins"
+            >
+              Full Name
+            </label>
             <div className="relative">
-              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-subtext" size={18} />
+              <User
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-subtext"
+                size={18}
+              />
               <input
                 type="text"
                 id="name"
@@ -109,9 +148,17 @@ const Register = () => {
 
           {/* Email */}
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-subtext font-poppins mb-2">Email Address</label>
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-subtext font-poppins mb-2"
+            >
+              Email Address
+            </label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-subtext" size={18} />
+              <Mail
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-subtext"
+                size={18}
+              />
               <input
                 type="email"
                 id="email"
@@ -127,7 +174,12 @@ const Register = () => {
 
           {/* Role */}
           <div>
-            <label htmlFor="role" className="block text-sm font-medium text-subtext font-poppins mb-2">Role</label>
+            <label
+              htmlFor="role"
+              className="block text-sm font-medium text-subtext font-poppins mb-2"
+            >
+              Role
+            </label>
             <select
               id="role"
               name="role"
@@ -136,7 +188,7 @@ const Register = () => {
               className="w-full px-4 py-2.5 border border-subtext text-subtext font-poppins rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
             >
               {roleOptions.map((option) => (
-                <option key={option.value} value={option.value} className=''>
+                <option key={option.value} value={option.value} className="">
                   {option.label} - {option.description}
                 </option>
               ))}
@@ -145,11 +197,19 @@ const Register = () => {
 
           {/* Password */}
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-subtext font-poppins mb-2">Password</label>
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-subtext font-poppins mb-2"
+            >
+              Password
+            </label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-subtext" size={18} />
+              <Lock
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-subtext"
+                size={18}
+              />
               <input
-                type={showPassword ? 'text' : 'password'}
+                type={showPassword ? "text" : "password"}
                 id="password"
                 name="password"
                 value={formData.password}
@@ -171,11 +231,19 @@ const Register = () => {
 
           {/* Confirm Password */}
           <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-subtext font-poppins mb-2">Confirm Password</label>
+            <label
+              htmlFor="confirmPassword"
+              className="block text-sm font-medium text-subtext font-poppins mb-2"
+            >
+              Confirm Password
+            </label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-subtext" size={18} />
+              <Lock
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-subtext"
+                size={18}
+              />
               <input
-                type={showConfirmPassword ? 'text' : 'password'}
+                type={showConfirmPassword ? "text" : "password"}
                 id="confirmPassword"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
@@ -202,9 +270,18 @@ const Register = () => {
               onChange={(e) => setAcceptTerms(e.target.checked)}
               className="h-4 w-4 focus:ring-primary border-gray-300 rounded mt-0.5 text-primary"
             />
-            <label htmlFor="acceptTerms" className="ml-2 text-sm text-subtext font-poppins">
-              I agree to the <span className="text-primary hover:text-headcolor font-poppins font-medium">Terms</span> and{" "}
-              <span className="text-primary hover:text-headcolor font-medium font-poppins">Privacy Policy</span>
+            <label
+              htmlFor="acceptTerms"
+              className="ml-2 text-sm text-subtext font-poppins"
+            >
+              I agree to the{" "}
+              <span className="text-primary hover:text-headcolor font-poppins font-medium">
+                Terms
+              </span>{" "}
+              and{" "}
+              <span className="text-primary hover:text-headcolor font-medium font-poppins">
+                Privacy Policy
+              </span>
             </label>
           </div>
 
@@ -221,13 +298,19 @@ const Register = () => {
         {/* Switch to Login */}
         <p className="mt-6 text-center text-sm text-subtext font-poppins">
           Already have an account?{" "}
-          <button onClick={() => navigate('/login')} className="text-blue-600 hover:text-headcolor text-primary hover:underline font-medium font-poppins">
+          <button
+            onClick={() => navigate("/login")}
+            className="text-blue-600 hover:text-headcolor text-primary hover:underline font-medium font-poppins"
+          >
             Sign in
           </button>
         </p>
       </div>
     </div>
-  )
+  );
 }
 
 export default Register
+
+
+

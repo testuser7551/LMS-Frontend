@@ -30,8 +30,8 @@ api.interceptors.response.use(
     // Auto logout on 401 Unauthorized
     if (error.response?.status === 401) {
       localStorage.removeItem("token"); // clear token
-      // optional redirect:
-      // window.location.href = "/login";
+     
+      window.location.href = "/login";
     }
     return Promise.reject(error);
   }

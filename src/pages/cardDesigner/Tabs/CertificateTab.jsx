@@ -61,21 +61,35 @@
 // export { CertificateTab };
 
 
-import React from "react";
+import React,{useContext} from "react";
 import { CertificateSearchBox } from "./components/certificateTabComponents/CertificateSearchBox";
 import { isEnabledContent } from "../../../api/carddesign/contentSection";
 import { showToast } from "../../../components/toast.js";
+import { CardContext } from '../../../context/CardContext';
 
-function CertificateTab({ certificate, onChange }) {
+
+function CertificateTab({ certification, onChange }) {
+  const { userCard } = useContext(CardContext);
+
+  //console.log("certificate",certification);
+  const updateField = (section, field, value) => {
+    onChange({
+      ...certification,
+      [section]: {
+        ...certification[section],
+        [field]: value,
+      },
+    });
+  };
   const handleToggleCertificate = async (checked) => {
     // 🔄 update parent state
     onChange({
-      ...certificate,
+      ...certification,
       isEnabled: checked,
     });
 
     try {
-      const payload = { contentpage: "certificate", isEnabled: checked };
+      const payload = { contentpage: "certification", isEnabled: checked, user_id: userCard?.user_id || "" };
       await isEnabledContent(payload);
 
       showToast(
@@ -101,21 +115,19 @@ function CertificateTab({ certificate, onChange }) {
             <label className="flex items-center cursor-pointer">
               <input
                 type="checkbox"
-                checked={certificate?.isEnabled || false}
+                checked={certification?.isEnabled}
                 onChange={(e) => handleToggleCertificate(e.target.checked)}
                 className="sr-only"
               />
               <span
-                className={`w-10 h-5 flex items-center rounded-full p-1 duration-300 ease-in-out ${
-                  certificate?.isEnabled
-                    ? "bg-[var(--color-btn-primary)]"
-                    : "bg-[var(--color-btn-secondary)]"
-                }`}
+                className={`w-10 h-5 flex items-center rounded-full p-1 duration-300 ease-in-out ${certification?.isEnabled
+                  ? "bg-[var(--color-btn-primary)]"
+                  : "bg-[var(--color-btn-secondary)]"
+                  }`}
               >
                 <span
-                  className={`bg-[var(--color-bgcolor)] w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out ${
-                    certificate?.isEnabled ? "translate-x-5" : ""
-                  }`}
+                  className={`bg-[var(--color-bgcolor)] w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out ${certification?.isEnabled ? "translate-x-5" : ""
+                    }`}
                 />
               </span>
             </label>
@@ -124,7 +136,7 @@ function CertificateTab({ certificate, onChange }) {
       </div>
 
       {/* Show search box card only if enabled */}
-      {certificate?.isEnabled && <CertificateSearchBox />}
+      {certification?.isEnabled && <CertificateSearchBox certification={certification} onChange={onChange} />}
     </div>
   );
 }

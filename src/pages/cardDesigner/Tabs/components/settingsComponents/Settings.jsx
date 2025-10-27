@@ -1,12 +1,12 @@
 // src/pages/Settings/Settings.jsx
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState,useContext } from "react";
 import { updateSettingsDetails} from "../../../../../api/carddesign/settings";
-
-
+import { CardContext } from '../../../../../context/CardContext';
+import {showToast} from "../../../../../components/toast";
 const Settings = ({ settings, setSettings}) => {
 
-
+const { userCard } = useContext(CardContext);
   const handleToggle = (key, value) => {
     setSettings({ ...settings, [key]: value });
   };
@@ -16,14 +16,18 @@ const Settings = ({ settings, setSettings}) => {
     try {
       let savedData;
       try {
-        savedData = await updateSettingsDetails(settings);
+        const payload = {
+          settings: settings,
+          user_id: userCard?.user_id || "",
+        };
+        savedData = await updateSettingsDetails(payload);
       } catch (err) {
         console.error(err);
       }
-      alert("Settings saved successfully!");
+      showToast("Settings saved successfully!","top-center",10000,"dark");
     } catch (err) {
       console.error("Error saving settings:", err);
-      alert("Failed to save settings. Try again.");
+      showToast("Failed to save settings. Try again.","top-center",10000,"dark");
     }
   };
 

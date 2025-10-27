@@ -57,7 +57,7 @@ const QuizPopup = ({
     selected,
   ]);
 
-  // ✅ Handle Enter key for Next/Finish
+  // Handle Enter key for Next/Finish
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === "Enter") {

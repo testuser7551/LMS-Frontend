@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { AboutMeSection } from "./components/aboutTabComponents/AboutMeSection";
 import { ExperienceSection } from "./components/aboutTabComponents/ExperienceSection";
 import { EducationSection } from "./components/aboutTabComponents/EducationSection";
@@ -6,8 +6,11 @@ import {
   isEnabledContent
 } from "../../../api/carddesign/contentSection";
 import { showToast } from "../../../components/toast.js";
+import { CardContext } from '../../../context/CardContext';
 
 function AboutTab({ contentAbout, onChange }) {
+  const { userCard } = useContext(CardContext);
+
   const updateField = (section, field, value) => {
     onChange({
       ...contentAbout,
@@ -18,15 +21,15 @@ function AboutTab({ contentAbout, onChange }) {
     });
   };
 
-  const handleToggleAbout = async(checked) => {
+  const handleToggleAbout = async (checked) => {
     onChange({
       ...contentAbout,
       isEnabled: checked,
     });
     try {
-      const payload={contentpage:"contentAbout",isEnabled:checked}
-      const saved = await  isEnabledContent(payload);
-      if(payload.isEnabled)
+      const payload = { contentpage: "contentAbout", isEnabled: checked, user_id: userCard?.user_id || "" }
+      const saved = await isEnabledContent(payload);
+      if (payload.isEnabled)
         showToast('About Enabled', "top-center", 3000, "dark");
       else
         showToast('About disabled', "top-center", 3000, "dark");
@@ -48,26 +51,24 @@ function AboutTab({ contentAbout, onChange }) {
                 type="checkbox"
                 checked={contentAbout?.isEnabled || false}
                 onChange={(e) => handleToggleAbout(e.target.checked)}
-                className="sr-only" 
+                className="sr-only"
               />
               <span
-                className={`w-10 h-5 flex items-center rounded-full p-1 duration-300 ease-in-out ${
-                  contentAbout?.isEnabled
-                    ? "bg-[var(--color-btn-primary)]"
-                    : "bg-[var(--color-btn-secondary)]"
-                }`}
+                className={`w-10 h-5 flex items-center rounded-full p-1 duration-300 ease-in-out ${contentAbout?.isEnabled
+                  ? "bg-[var(--color-btn-primary)]"
+                  : "bg-[var(--color-btn-secondary)]"
+                  }`}
               >
                 <span
-                  className={`bg-[var(--color-bgcolor)] w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out ${
-                    contentAbout?.isEnabled ? "translate-x-5" : ""
-                  }`}
+                  className={`bg-[var(--color-bgcolor)] w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out ${contentAbout?.isEnabled ? "translate-x-5" : ""
+                    }`}
                 />
               </span>
             </label>
           </div>
         </div>
       </div>
-                  
+
       {contentAbout?.isEnabled && (
         <>
           <AboutMeSection
@@ -82,12 +83,12 @@ function AboutTab({ contentAbout, onChange }) {
               updateField("experienceSection", field, value)
             }
           />
-          {/* <EducationSection
+          <EducationSection
             educationSection={contentAbout.educationSection}
             onChange={(field, value) =>
               updateField("educationSection", field, value)
             }
-          /> */}
+          />
         </>
       )}
     </div>

@@ -8,17 +8,13 @@ export const saveProfileSection = async (formData) => {
 };
 
 // ---------------- PUT Header Section ----------------
-export const saveHeaderSection = async (headerStyle) => {
-  return await putRequest(`/api/header`, {
-    headerStyleSection: { headerStyle },
-  });
+export const saveHeaderSection = async (data) => {
+  return await putRequest(`/api/header`, data);
 };
 
 // ---------------- PUT Font Section ----------------
-export const saveFontSection = async (font) => {
-  return await putRequest(`/api/font`, {
-    fontStyleSection: { font },
-  });
+export const saveFontSection = async (data) => {
+  return await putRequest(`/api/font`, data);
 };
 
 
@@ -30,9 +26,9 @@ export const saveBannerImgSection = async (formData) => {
 };
 
 // Save / update Themes Section
-export const saveThemesSection = async (themeData) => {
+export const saveThemesSection = async (data) => {
   // themeData must include cardId inside it, e.g. { cardId, themeName, primaryColor, ... }
-  return await putRequest(`/api/themesSection`, themeData);
+  return await putRequest(`/api/themesSection`, data);
 };
 
 // ✅ Fetch all themes

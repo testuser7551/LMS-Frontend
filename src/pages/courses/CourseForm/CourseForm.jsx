@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useContext } from "react";
 import { ArrowLeft } from "lucide-react";
 import { fetchCategories } from "../../../api/courses/category";
 import { useNavigate } from "react-router-dom";
 import { Play, FileText, File, HelpCircle } from "lucide-react";
+import { AuthContext } from "../../../context/AuthContext";
+
 import {
   saveCourseDetailsAPI,
   saveChapterAPI,
@@ -32,6 +34,7 @@ const API_BASE = import.meta.env.VITE_API_BASE;
 const CourseForm = () => {
   const location = useLocation();
   const courseId = location.state?.courseId;
+  const { user } = useContext(AuthContext);
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -62,37 +65,35 @@ const CourseForm = () => {
   const [editingLesson, setEditingLesson] = useState(null);
   const [enrolledCount, setEnrolledCount] = useState(0);
 
-  useEffect(() => {
-    const getCourse = async () => {
-      if (!courseId) return; // If no courseId, do nothing
 
-      try {
-        const data2 = await getEnrolledCourseCountAPI(courseId);
-        if (data2.success) {
-          setEnrolledCount(data2.enrolledCount);
-        }
-
-        const data = await fetchCourseByIdAPI(courseId);
-
-        // Set the fetched data to state
-        setCourse({
-          title: data.title || "",
-          description: data.description || "",
-          level: data.level || "",
-          instructor: data.instructor || "",
-          tags: data.tags || [],
-          tagsInput: (data.tags || []).map((tag) => `#${tag}`).join(" "),
-          image: data.image || null,
-          category: data.category || "",
-          chapters: data.chapters || [],
-        });
-        setbackendcoursedata(data); // optionally store full backend data
-      } catch (error) {
-        console.error("Error fetching course:", error);
-        // optionally show an error message to user
+  const getCourse = async () => {
+    if (!courseId) return;
+    try {
+      const data2 = await getEnrolledCourseCountAPI(courseId);
+      if (data2.success) {
+        setEnrolledCount(data2.enrolledCount);
       }
-    };
 
+      const data = await fetchCourseByIdAPI(courseId);
+
+      setCourse({
+        title: data.title || "",
+        description: data.description || "",
+        level: data.level || "",
+        instructor: data.instructor || "",
+        tags: data.tags || [],
+        tagsInput: (data.tags || []).map((tag) => `#${tag}`).join(" "),
+        image: data.image || null,
+        category: data.category || "",
+        chapters: data.chapters || [],
+      });
+
+      setbackendcoursedata(data);
+    } catch (error) {
+      console.error("Error fetching course:", error);
+    }
+  };
+  useEffect(() => {
     getCourse();
   }, [courseId]);
 
@@ -189,6 +190,7 @@ const CourseForm = () => {
     formData.append("instructor", course.instructor);
     formData.append("tags", JSON.stringify(course.tags));
     formData.append("image", course.image);
+    formData.append("schoolObjectId", "68ce4ebb10ca5e6bb67b0dca");
     formData.append("chapters", JSON.stringify(course.chapters));
 
     try {
@@ -385,6 +387,7 @@ const CourseForm = () => {
                     (chapter) => chapter._id !== chapterId
                   ),
                 }));
+                await getCourse();
 
                 showSuccess("Chapter deleted successfully!");
               } else {
@@ -412,6 +415,7 @@ const CourseForm = () => {
               (chapter) => chapter._id !== chapterId
             ),
           }));
+          await getCourse();
 
           showSuccess("Chapter deleted successfully!");
         } else {
@@ -508,7 +512,7 @@ const CourseForm = () => {
             );
             return;
           }
-
+          await getCourse();
           // Existing lesson → update
           const updated = await updateLessonAPI(
             courseId,
@@ -531,6 +535,7 @@ const CourseForm = () => {
                   }
                 : ch
             );
+            await getCourse();
 
             setCourse({ ...course, chapters: updatedChapters });
             showSuccess("Lesson updated successfully!");
@@ -583,6 +588,7 @@ const CourseForm = () => {
           );
           return;
         }
+        await getCourse();
 
         const resp = await deleteLessonAPI(
           backendcoursedata._id,
@@ -600,6 +606,7 @@ const CourseForm = () => {
                 }
               : ch
           );
+          await getCourse();
 
           setCourse({ ...course, chapters: updatedChapters });
           showSuccess("Lesson deleted successfully!");
@@ -612,17 +619,51 @@ const CourseForm = () => {
     }
   };
 
+  // const handlePublish = async () => {
+  //   try {
+  //     setLoading(true);
+  //     setMessage("");
+  //     if (!backendcoursedata?._id)
+  //       return showError("Create Course and then Publish!");
+  //     const courseId = backendcoursedata._id;
+  //     console.log(backendcoursedata.coursepublished);
+  //     const data = await publishFullCourse(courseId);
+  //     if (data.success) {
+  //       showSuccess(data.message || "Course published successfully!");
+  //     } else {
+  //       showError(data.message || "Failed to publish course.");
+  //     }
+  //   } catch (error) {
+  //     setMessage("An error occurred while publishing.");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   const handlePublish = async () => {
     try {
       setLoading(true);
       setMessage("");
-      if (!backendcoursedata?._id)
+      await getCourse();
+
+      if (!backendcoursedata?._id) {
         return showError("Create Course and then Publish!");
+      }
+
       const courseId = backendcoursedata._id;
 
+      // prevent re-publish if already published
+      if (backendcoursedata.coursepublished === "Published") {
+        return showError("Course is already published.");
+      }
+
       const data = await publishFullCourse(courseId);
+
       if (data.success) {
         showSuccess(data.message || "Course published successfully!");
+
+        // 🔄 refresh course data
+        await getCourse();
       } else {
         showError(data.message || "Failed to publish course.");
       }
@@ -654,11 +695,18 @@ const CourseForm = () => {
             <h1 className="text-2xl font-semibold text-primary">Add Course</h1>
             <div>
               <button
+                disabled={
+                  backendcoursedata?.coursepublished === "Published" || loading
+                }
                 className="bg-secondary text-white px-6 py-2 rounded-lg hover:bg-primary cursor-pointer transition-colors duration-200"
                 onClick={handlePublish}
-                disabled={loading}
               >
-                {loading ? "Publishing..." : "Publish Full Course"}
+                {/* {loading ? "Publishing..." : "Publish Full Course"} */}
+                {backendcoursedata?.coursepublished === "Published"
+                  ? "Already Published"
+                  : loading
+                  ? "Publishing..."
+                  : "Publish Full Course"}
               </button>
               {message && (
                 <p className="mt-2 text-sm text-green-600">{message}</p>

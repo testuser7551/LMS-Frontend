@@ -136,9 +136,9 @@ function ContentSection({ card, onCardChange }) {
 
           {activeSection === 'certificates' && (
             <CertificateTab
-              certificate={card.certificate}
+              certification={card.certification}
               onChange={(updatedCertificate) =>
-                onCardChange({ ...card, certificate: updatedCertificate })
+                onCardChange({ ...card, certification: updatedCertificate })
               } />
           )}
         </div>

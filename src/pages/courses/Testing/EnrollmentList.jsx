@@ -1,6 +1,6 @@
 // EnrollmentList.jsx
 import React, { useEffect, useState } from "react";
-
+import {showToast} from "../../../components/toast";
 import { fetchEnrollments, deleteEnrollment } from "../../../api/courses/enroll";
 
 const EnrollmentList = () => {
@@ -14,7 +14,7 @@ const EnrollmentList = () => {
       setEnrollments(response);
     } catch (error) {
       console.error("Error fetching enrollments:", error);
-      alert("Failed to fetch enrollments");
+      showToast("Failed to fetch enrollments","top-center",10000,"dark");
     } finally {
       setLoading(false);
     }
@@ -27,11 +27,11 @@ const EnrollmentList = () => {
 
     try {
       await deleteEnrollment(userId, courseId);
-      alert("Enrollment deleted successfully");
+      showToast("Enrollment deleted successfully","top-center",10000,"dark");
       fetchEnrollments(); // Refresh the list
     } catch (error) {
       console.error("Error deleting enrollment:", error);
-      alert("Failed to delete enrollment");
+      showToast("Failed to delete enrollment","top-center",10000,"dark");
     }
   };
 

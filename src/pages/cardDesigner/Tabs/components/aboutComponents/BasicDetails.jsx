@@ -1,11 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import {
   updateBasicDetails
 } from "../../../../../api/carddesign/aboutSection";
 import { showToast } from "../../../../../components/toast.js";
+import { CardContext } from '../../../../../context/CardContext';
 
 
 const BasicDetails = ({ basicDetails, onChange }) => {
+  const { userCard } = useContext(CardContext);
   //  Format input as (123) 456-7890
   const formatPhoneNumber = (value) => {
     if (!value) return value;
@@ -38,17 +40,18 @@ const BasicDetails = ({ basicDetails, onChange }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!validateUSPhone(basicDetails.mobilenumber)) {
+    if (!validateUSPhone(basicDetails?.mobilenumber)) {
       showToast("Invalid phone number! Format: (123) 456-7890", "top-center", 4000, "dark");
       return;
     }
     try {
       let savedData;
       try {
-        const cleanedNumber = basicDetails.mobilenumber.replace(/\D/g, "");
+        const cleanedNumber = basicDetails?.mobilenumber.replace(/\D/g, "");
         const payload = {
           ...basicDetails,
           mobilenumber: cleanedNumber, // store digits only in DB
+          user_id: userCard?.user_id ? userCard?.user_id : ""
         };
         await updateBasicDetails(payload);
       } catch (err) {
@@ -56,7 +59,6 @@ const BasicDetails = ({ basicDetails, onChange }) => {
         throw err;
       }
       showToast('Basic details saved successfully!', "top-center", 5000, "dark");
-
     } catch (err) {
       //console.error("Error saving basic details:", err);
       showToast('Failed to save basic details. Try again.', "top-center", 5000, "dark");
@@ -66,7 +68,6 @@ const BasicDetails = ({ basicDetails, onChange }) => {
     const formatted = formatPhoneNumber(e.target.value);
     onChange("mobilenumber", formatted);
   };
-
 
   return (
     <div className="mb-8 bg-[var(--color-bgcolor)] p-4 rounded-lg shadow border border-[var(--color-secondarybgcolor)]">
@@ -108,7 +109,7 @@ const BasicDetails = ({ basicDetails, onChange }) => {
               type="text"
               name="name"
               placeholder="Enter your name"
-              value={basicDetails.name}
+              value={basicDetails?.name}
               onChange={(e) => onChange("name", e.target.value)}
               className="w-full border rounded-lg p-2 border-[var(--color-highlight)] focus:border-[var(--color-subtext)] text-[var(--color-text)] outline-none"
               required
@@ -123,7 +124,7 @@ const BasicDetails = ({ basicDetails, onChange }) => {
               type="email"
               name="email"
               placeholder="Enter your email"
-              value={basicDetails.email}
+              value={basicDetails?.email}
               onChange={(e) => onChange("email", e.target.value)}
               className="w-full border rounded-lg p-2 border-[var(--color-highlight)] focus:border-[var(--color-subtext)] text-[var(--color-text)] outline-none"
               required
@@ -139,7 +140,7 @@ const BasicDetails = ({ basicDetails, onChange }) => {
               type="text"
               name="mobilenumber"
               placeholder="Enter your mobile number"
-              value={basicDetails.mobilenumber}
+              value={basicDetails?.mobilenumber}
               onChange={handlePhoneChange}
               className="w-full border rounded-lg p-2 border-[var(--color-highlight)] focus:border-[var(--color-subtext)] text-[var(--color-text)] outline-none"
               required
@@ -155,7 +156,7 @@ const BasicDetails = ({ basicDetails, onChange }) => {
               type="text"
               name="jobTitle"
               placeholder="Enter your job title"
-              value={basicDetails.jobTitle}
+              value={basicDetails?.jobTitle}
               onChange={(e) => onChange("jobTitle", e.target.value)}
               className="w-full border rounded-lg p-2 border-[var(--color-highlight)] focus:border-[var(--color-subtext)] text-[var(--color-text)] outline-none"
               required
@@ -171,7 +172,7 @@ const BasicDetails = ({ basicDetails, onChange }) => {
               type="text"
               name="organization"
               placeholder="Enter company name"
-              value={basicDetails.organization}
+              value={basicDetails?.organization}
               onChange={(e) => onChange("organization", e.target.value)}
               className="w-full border rounded-lg p-2 border-[var(--color-highlight)] focus:border-[var(--color-subtext)] text-[var(--color-text)] outline-none"
               required
@@ -187,7 +188,7 @@ const BasicDetails = ({ basicDetails, onChange }) => {
               type="text"
               name="location"
               placeholder="Enter location"
-              value={basicDetails.location}
+              value={basicDetails?.location}
               onChange={(e) => onChange("location", e.target.value)}
               className="w-full border rounded-lg p-2 border-[var(--color-highlight)] focus:border-[var(--color-subtext)] text-[var(--color-text)] outline-none"
               required

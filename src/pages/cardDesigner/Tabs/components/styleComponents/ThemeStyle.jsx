@@ -1,9 +1,11 @@
 // src/pages/cardDesigner/Tabs/components/styleComponents/ThemeStyle.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { saveThemesSection, fetchAllThemes } from "../../../../../api/carddesign/styleSection";
-import { showToast } from "../../../../../components/toast"
+import { showToast } from "../../../../../components/toast";
+import { CardContext } from '../../../../../context/CardContext';
 
 const ThemeStyle = ({ card, onChange }) => {
+  const { userCard } = useContext(CardContext);
   const [themes, setThemes] = useState({});
   const [loading, setLoading] = useState(true);
 
@@ -109,32 +111,36 @@ const ThemeStyle = ({ card, onChange }) => {
   //   }
   // };
   const handleSave = async () => {
-  if (!selectedTheme) return;
+    if (!selectedTheme) return;
 
-  let themeData;
+    let themeData;
 
-  if (selectedTheme === "Custom") {
-    themeData = {
-      themeName: "Custom",
-      themeId: null,
-      ...customColors,
-    };
-  } else {
-    const themeValues = themes[selectedTheme] || {};
-    themeData = {
-      themeName: selectedTheme,
-      themeId: themeValues._id || null,
-      ...themeValues,
-    };
-  }
+    if (selectedTheme === "Custom") {
+      themeData = {
+        themeName: "Custom",
+        themeId: null,
+        ...customColors,
+      };
+    } else {
+      const themeValues = themes[selectedTheme] || {};
+      themeData = {
+        themeName: selectedTheme,
+        themeId: themeValues._id || null,
+        ...themeValues,
+      };
+    }
 
-  try {
-    const res = await saveThemesSection(themeData); // ✅ only payload
-    showToast(`✅ Themes saved successfully: ${res?.message || themeData.themeName}`);
-  } catch (err) {
-    showToast("❌ Error saving themes", "top-center", 5000, "dark");
-  }
-};
+    try {
+      const payload = {
+        themeData: themeData,
+        user_id: userCard?.user_id || "",
+      };
+      const res = await saveThemesSection(payload); // ✅ only payload
+      showToast(`✅ Themes saved successfully: ${res?.message || themeData.themeName}`);
+    } catch (err) {
+      showToast("❌ Error saving themes", "top-center", 5000, "dark");
+    }
+  };
 
 
 
@@ -168,19 +174,73 @@ const ThemeStyle = ({ card, onChange }) => {
       </p>
 
       {/* Theme Options with scroll */}
-      <div className="flex gap-4 overflow-x-auto p-2">
+      {/* <div className="overflow-x-auto w-full min-w-0">
+        <div className="flex gap-4 p-2 ">
+          {allThemes.map((theme) => {
+            const themeData = themes[theme] || {};
+            return (
+              <button
+                key={theme}
+                onClick={() => handleThemeSelect(theme)}
+                className={`w-32 h-36 flex-shrink-0 cursor-pointer rounded-2xl border flex flex-col items-center justify-between transition-all duration-300 transform hover:scale-105 hover:shadow-lg`}
+                style={{
+                  borderColor:
+                    selectedTheme === theme
+                      ? "var(--color-primary)"
+                      : "transparent",
+                  borderWidth: selectedTheme === theme ? "3px" : "",
+                  backgroundColor:
+                    theme === "Custom"
+                      ? "#1a1a2e"
+                      : themeData.backgroundColor || "#f4f4f5",
+                }}
+              >
+                <span
+                  className="mt-3 font-semibold text-sm font-poppins text-center truncate"
+                  style={{
+                    color: theme === "Custom" ? "#fff" : themeData.textColor || "#000",
+                  }}
+                >
+                  {theme}
+                </span>
+ 
+                <div
+                  className="w-8 h-2 rounded-md"
+                  style={{
+                    backgroundColor:
+                      theme === "Custom"
+                        ? "#9ca3af"
+                        : themeData.secondaryColor || "#d1d5db",
+                  }}
+                />
+
+                <div
+                  className="w-full h-5 rounded-b-2xl"
+                  style={{
+                    backgroundColor:
+                      theme === "Custom"
+                        ? "#6b7280"
+                        : themeData.territoryColor || "#9ca3af",
+                  }}
+                />
+              </button>
+            );
+          })}
+        </div>
+      </div> */}
+      {/* second one all  */}
+      {/* Theme Options with grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5  gap-4">
         {allThemes.map((theme) => {
           const themeData = themes[theme] || {};
           return (
             <button
               key={theme}
               onClick={() => handleThemeSelect(theme)}
-              className={`min-w-[120px] cursor-pointer h-36 rounded-2xl border flex flex-col items-center justify-between transition-all duration-300 transform hover:scale-105 hover:shadow-lg`}
+              className="h-36 w-full rounded-2xl border flex flex-col items-center justify-between transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
               style={{
                 borderColor:
-                  selectedTheme === theme
-                    ? "var(--color-primary)"
-                    : "transparent",
+                  selectedTheme === theme ? "var(--color-primary)" : "transparent",
                 borderWidth: selectedTheme === theme ? "3px" : "",
                 backgroundColor:
                   theme === "Custom"
@@ -188,9 +248,9 @@ const ThemeStyle = ({ card, onChange }) => {
                     : themeData.backgroundColor || "#f4f4f5",
               }}
             >
-              {/* Theme name */}
+              {/* Theme Name */}
               <span
-                className="mt-3 font-semibold text-sm font-poppins"
+                className="mt-3 font-semibold text-sm font-poppins text-center truncate"
                 style={{
                   color: theme === "Custom" ? "#fff" : themeData.textColor || "#000",
                 }}
@@ -198,7 +258,7 @@ const ThemeStyle = ({ card, onChange }) => {
                 {theme}
               </span>
 
-              {/* Divider */}
+              {/* Secondary Color Preview */}
               <div
                 className="w-8 h-2 rounded-md"
                 style={{
@@ -209,7 +269,7 @@ const ThemeStyle = ({ card, onChange }) => {
                 }}
               />
 
-              {/* Bottom preview strip */}
+              {/* Territory Color Preview */}
               <div
                 className="w-full h-5 rounded-b-2xl"
                 style={{
@@ -223,6 +283,9 @@ const ThemeStyle = ({ card, onChange }) => {
           );
         })}
       </div>
+
+
+
 
       {/* Custom Color Pickers */}
       {selectedTheme === "Custom" && (

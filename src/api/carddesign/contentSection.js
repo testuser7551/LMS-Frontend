@@ -61,10 +61,10 @@ export const savePhotoSectionAPI = async (formData) => {
 //   }
 // };
 
-export const deletePhotoAPI = async (filename) => {
+export const deletePhotoAPI = async (data) => {
   try {
     const response = await api.delete(`/api/deletephoto`, {
-      data: { filename }, // axios allows sending body with DELETE
+      data, // axios allows sending body with DELETE
     });
     return response.data;
   } catch (error) {
@@ -102,12 +102,58 @@ export const updateExperienceById = async (experienceId, data) => {
 };
 
 // Delete an experience by its ID
-export const deleteExperience = async (experienceId) => {
-  return await deleteRequest(`/api/content/experience/${experienceId}`);
+export const deleteExperience = async (experienceId, data) => {
+  try {
+    const response = await api.delete(`/api/content/experience/${experienceId}`, {
+      data,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting experience:", error.response?.data || error.message);
+    throw error;
+  }
 };
 
 
-export const getAllCertificates = async () => {
-  return await getRequest('/api/content/certificates');
+//education
+export const updateEducationMeta = async (data) => {
+  return await putRequest(`/api/content/education-title`, data);
 };
 
+//save education Section modal Array
+export const saveEducationSection = async (data) => {
+  return await postRequest(`/api/content/education`, data);
+};
+
+// Update a single education by its ID
+export const updateEducationById = async (educationId, data) => {
+  return await putRequest(`/api/content/education/${educationId}`, data);
+};
+
+// Delete an education by its ID
+export const deleteEducation = async (educationId, data) => {
+  try {
+    const response = await api.delete(`/api/content/education/${educationId}`, {
+      data,  // Send data (e.g., user_id) in the body of the DELETE request
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting education:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const getAllCertificates = async (user_id) => {
+  const url = user_id ? `/api/content/certificates/${user_id}` : `/api/content/certificates`;
+  return await getRequest(url);
+
+};
+
+// export const updateCertificates = async () => {
+//   return await getRequest('/api/content/addcertificates');
+// };
+
+
+export const updateCertificates = async (data) => {
+  return await putRequest("/api/content/addcertificates", data);
+};

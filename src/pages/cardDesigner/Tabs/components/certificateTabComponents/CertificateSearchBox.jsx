@@ -1,28 +1,31 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { getAllCertificates } from "../../../../../api/carddesign/contentSection";
-
+import { updateCertificates } from "../../../../../api/carddesign/contentSection";
+import { CardContext } from '../../../../../context/CardContext';
+import {showToast} from "../../../../../components/toast";
 const API_BASE = import.meta.env.VITE_API_BASE;
 
-function CertificateSearchBox() {
+function CertificateSearchBox({ certification, onChange }) {
+  const { userCard } = useContext(CardContext);
   const [search, setSearch] = useState("");
   const [selectedCertificates, setSelectedCertificates] = useState([]);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const [certificateFiles, setCertificateFiles] = useState([]);
 
-  // ✅ Fetch certificates from API
   useEffect(() => {
     const fetchCertificates = async () => {
       try {
-        const response = await getAllCertificates();
-        
+        const response = await getAllCertificates(userCard?.user_id);
+
         if (response && Array.isArray(response.certificates)) {
-          setCertificateFiles(
-            response.certificates.map((cert) => ({
-              id: cert._id,                 // use _id from DB
-              name: cert.course?.title || "", // course title from DB
-              certificateUrl: cert.certificate  
-            }))
-          );
+          const mapped = response.certificates.map((cert) => ({
+            id: cert.certificate,
+            name: cert.course?.title || "",
+            certificateUrl: cert.certificate,
+          }));
+
+          // ✅ just store for displaying
+          setCertificateFiles(mapped);
         }
       } catch (error) {
         console.error("Error fetching certificates:", error);
@@ -30,7 +33,19 @@ function CertificateSearchBox() {
     };
 
     fetchCertificates();
-  }, []);
+
+    // ✅ set from certification prop
+    if (certification?.coursecertificates?.length) {
+      setSelectedCertificates(
+        certification.coursecertificates.map((url) => ({
+          id: url,
+          name: "", // no course title from props
+          certificateUrl: url,
+        }))
+      );
+    }
+  }, [certification]);
+
 
   // Filter results by search text
   const filtered = certificateFiles.filter((cert) =>
@@ -43,15 +58,41 @@ function CertificateSearchBox() {
     setHighlightedIndex(-1);
 
     if (item) {
-      setSelectedCertificates((prev) =>
-        prev.find((c) => c.id === item.id) ? prev : [...prev, item]
-      );
+      setSelectedCertificates((prev) => {
+        if (prev.find((c) => c.id === item.id)) return prev;
+
+        const updated = [...prev, item];
+
+        // 🔄 update parent certification
+        if (onChange) {
+          onChange({
+            ...certification,
+            coursecertificates: updated.map((c) => c.certificateUrl),
+          });
+        }
+
+        return updated;
+      });
     }
   };
 
-  // Handle removing certificate
-  const handleRemove = (id) => {
-    setSelectedCertificates((prev) => prev.filter((cert) => cert.id !== id));
+  const handleRemove = (index, imagePath) => {
+    setSelectedCertificates((prev) => {
+      const updated = [...prev];
+      updated.splice(index, 1);
+
+      // 🔄 update parent certification
+      if (onChange) {
+        onChange({
+          ...certification,
+          coursecertificates: updated.map((c) => c.certificateUrl),
+        });
+      }
+
+      return updated;
+    });
+
+    console.log("Removed certificate:", imagePath);
   };
 
   // Handle keyboard navigation
@@ -73,6 +114,49 @@ function CertificateSearchBox() {
       if (highlightedIndex >= 0 && highlightedIndex < filtered.length) {
         handleSelect(filtered[highlightedIndex]);
       }
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      const certificateImageUrl = selectedCertificates.map(cert => cert.certificateUrl); // ✅ _id from DB
+
+      const payload = {
+        certificateImageUrl: certificateImageUrl,
+        user_id: userCard?.user_id || "",
+      };
+
+      const response = await updateCertificates(payload);
+
+      //console.log("Update response:", response);
+
+      // ✅ Fetch again to reload saved certificates
+      const refreshed = await getAllCertificates(userCard?.user_id);
+      if (refreshed && Array.isArray(refreshed.certificates)) {
+        setCertificateFiles(
+          refreshed.certificates.map((cert) => ({
+            _id: cert.certificate,
+            name: cert.course?.title || "",
+            certificateUrl: cert.certificate
+          }))
+        );
+
+        // Optionally reset selectedCertificates if backend sends updated selected state
+        // setSelectedCertificates(
+        //   refreshed.certificates
+        //     .filter(cert => certificateIds.includes(cert._id))
+        //     .map(cert => ({
+        //       _id: cert._id,
+        //       name: cert.course?.title || "",
+        //       certificateUrl: cert.certificate
+        //     }))
+        // );
+      }
+
+      showToast("Certificates updated successfully!","top-center",10000,"dark");
+    } catch (error) {
+      console.error("Error updating certificates:", error);
+      showToast("Failed to update certificates.","top-center",10000,"dark");
     }
   };
 
@@ -100,11 +184,10 @@ function CertificateSearchBox() {
             filtered.map((item, idx) => (
               <li
                 key={item.id}
-                className={`px-3 py-2 cursor-pointer ${
-                  highlightedIndex === idx
-                    ? "bg-[var(--color-btn-primary)] text-white"
-                    : "hover:bg-[var(--color-btn-secondary)]"
-                }`}
+                className={`px-3 py-2 cursor-pointer ${highlightedIndex === idx
+                  ? "bg-[var(--color-btn-primary)] text-white"
+                  : "hover:bg-[var(--color-btn-secondary)]"
+                  }`}
                 onClick={() => handleSelect(item)}
                 onMouseEnter={() => setHighlightedIndex(idx)}
               >
@@ -119,37 +202,48 @@ function CertificateSearchBox() {
 
       {/* Selected certificate titles */}
       {selectedCertificates.length > 0 && (
-  // <div className="mt-4 space-y-2">
-  <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-    {selectedCertificates.map((cert) => (
-      <div
-        key={cert.id}
-        className="p-2 border border-[var(--color-secondarybgcolor)] rounded-lg bg-white"
-      >
-      <div className="flex justify-end">
-  <button
-    className="bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
-    onClick={() => handleRemove(cert.id)}
-  >
-    ×
-  </button>
-</div>
+        // <div className="mt-4 space-y-2">
+        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {selectedCertificates.map((cert, index) => (
+            <div
+              key={index}
+              className="p-2 border border-[var(--color-secondarybgcolor)] rounded-lg bg-white"
+            >
+              <div className="flex justify-end">
+                <button
+                  className="bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
+                  onClick={() => handleRemove(index, cert.certificateUrl)}
+                >
+                  ×
+                </button>
+              </div>
 
 
-        {/* ✅ Certificate preview */}
-        {cert.certificateUrl && (
-          <div className="mt-2">
-            <img
-              src={`${API_BASE}${cert.certificateUrl}`}  // ✅ prepend API_BASE
-              alt={`${cert.name} certificate`}
-              className="w-full h-auto rounded-lg border border-gray-300"
-            />
-          </div>
-        )}
-      </div>
-    ))}
-  </div>
-)}
+              {/* ✅ Certificate preview */}
+              {cert.certificateUrl && (
+                <div className="mt-2">
+                  <img
+                    src={`${API_BASE}${cert.certificateUrl}`}  // ✅ prepend API_BASE
+                    alt={`${cert.name} certificate`}
+                    className="w-full h-auto rounded-lg border border-gray-300"
+                  />
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {selectedCertificates.length > 0 && (
+        <div className="mt-4 flex justify-end">
+          <button
+            onClick={handleSave}
+            className="px-4 py-2 bg-[var(--color-btn-primary)] text-white rounded-lg hover:bg-[var(--color-btn-secondary)]"
+          >
+            Save
+          </button>
+        </div>
+      )}
 
     </div>
   );

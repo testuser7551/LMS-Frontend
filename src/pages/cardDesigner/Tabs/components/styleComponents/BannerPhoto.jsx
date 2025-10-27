@@ -1,11 +1,13 @@
 
-import React from "react";
+import React, { useContext } from "react";
 import { saveBannerImgSection } from "../../../../../api/carddesign/styleSection";
 import FileDropzone from "../../../../courses/FileDropzone"; // adjust path if needed
-
+import { CardContext } from '../../../../../context/CardContext';
+import {showToast} from "../../../../../components/toast";
 const API_BASE = import.meta.env.VITE_API_BASE;
 
 const BannerPhoto = ({ bannerFile, bannerPreview, handleBannerChange }) => {
+  const { userCard } = useContext(CardContext);
   const handleSave = async () => {
     try {
       const formData = new FormData();
@@ -16,11 +18,14 @@ const BannerPhoto = ({ bannerFile, bannerPreview, handleBannerChange }) => {
         // send empty to trigger delete
         formData.append("bannerImg", "");
       }
+      if (userCard?.user_id) {
+        formData.append("user_id", userCard.user_id);
+      }
 
       await saveBannerImgSection(formData);
-      alert("✅ Banner saved!");
+      showToast(" Banner saved!","top-center",10000,"dark");
     } catch (err) {
-      alert("❌ Failed to save banner");
+      showToast("Failed to save banner","top-center",10000,"dark");
     }
   };
   return (

@@ -1,37 +1,40 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { X } from "lucide-react";
 import {
   updateTextSection,
 } from "../../../../../api/carddesign/contentSection";
-import { showToast } from "../../../../../components/toast.js";
+import { CardContext } from '../../../../../context/CardContext';
+import {showToast} from "../../../../../components/toast.js";
 
 function TextSection({ textSection, onChange }) {
-
+  const { userCard } = useContext(CardContext);
   const handleSave = async () => {
     try {
       // ✅ Simple validation
       if (!textSection.heading?.trim()) {
-        alert(" Title cannot be empty");
-      showToast('Photos saved successfully!', "top-center", 5000, "dark");
+        showToast(" Title cannot be empty");
+        showToast('Photos saved successfully!', "top-center", 5000, "dark");
         return;
       }
       if (!textSection.title?.trim()) {
-        alert(" Title cannot be empty");
+        showToast(" Title cannot be empty");
         return;
       }
       if (!textSection.content?.trim()) {
-        alert("Content cannot be empty");
+        showToast("Content cannot be empty","top-center",10000,"dark");
         return;
       }
-
+      const payload = {
+        textSection: textSection,
+        user_id: userCard?.user_id || "",
+      };
       //  Proceed with saving
-      const saved = await updateTextSection(textSection);
+      const saved = await updateTextSection(payload);
 
-      
-      alert("Text Section saved successfully!");
+      showToast("Text Section saved successfully!","top-center",10000,"dark");
     } catch (err) {
       //console.error(" Text Section error:", err);
-      alert("Failed to save Text Section");
+      showToast("Failed to save Text Section","top-center",10000,"dark");
     }
   }
 
@@ -47,19 +50,19 @@ function TextSection({ textSection, onChange }) {
           <label className="flex items-center cursor-pointer">
             <input
               type="checkbox"
-              checked={textSection.isEnabled}
+              checked={textSection?.isEnabled}
               name="isEnabled"
               onChange={(e) => onChange("isEnabled", e.target.checked)}
               className="sr-only"
             />
             <span
-              className={`w-10 h-5 flex items-center rounded-full p-1 duration-300 ease-in-out ${textSection.isEnabled
-                  ? "bg-[var(--color-btn-primary)]"
-                  : "bg-[var(--color-btn-secondary)]"
+              className={`w-10 h-5 flex items-center rounded-full p-1 duration-300 ease-in-out ${textSection?.isEnabled
+                ? "bg-[var(--color-btn-primary)]"
+                : "bg-[var(--color-btn-secondary)]"
                 }`}
             >
               <span
-                className={`bg-[var(--color-bgcolor)] w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out ${textSection.isEnabled ? "translate-x-5" : ""
+                className={`bg-[var(--color-bgcolor)] w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out ${textSection?.isEnabled ? "translate-x-5" : ""
                   }`}
               />
             </span>
@@ -70,7 +73,7 @@ function TextSection({ textSection, onChange }) {
       {/* Inputs */}
       <input
         type="text"
-        value={textSection.heading}
+        value={textSection?.heading}
         name="heading"
         onChange={(e) => onChange("heading", e.target.value)}
         placeholder="Heading"
@@ -78,7 +81,7 @@ function TextSection({ textSection, onChange }) {
       />
       <input
         type="text"
-        value={textSection.title}
+        value={textSection?.title}
         name="title"
         onChange={(e) => onChange("title", e.target.value)}
         placeholder="Title"
@@ -86,7 +89,7 @@ function TextSection({ textSection, onChange }) {
       />
       <textarea
         rows={3}
-        value={textSection.content}
+        value={textSection?.content}
         onChange={(e) => onChange("content", e.target.value)}
         placeholder="Write something..."
         className="w-full px-3 py-2 border border-[var(--color-secondarybgcolor)] rounded-lg mb-2 font-Poppins text-[var(--color-text)] placeholder-[var(--color-subtext)]"

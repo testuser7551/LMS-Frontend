@@ -20,14 +20,20 @@ export const getCardDesignWithId = async (id) => {
   }
 };
 
-export const getAllCardDesign = async () => {
+export const getAllCardDesign = async ({ page = 1, limit = 9, searchTerm = '', batch = 'all' }) => {
   try {
-    const response = await api.get(`/api/all-card-design`);
+    const response = await api.get(`/api/all-card-design`, {
+      params: {
+        page,
+        limit,
+        searchTerm,
+        batch,
+      },
+    });
     return response.data;
   } catch (error) {
-    //console.error("Error fetching Card Design:", error);
+    console.error("Error fetching Card Design:", error);
     throw error;
   }
 };
-
 

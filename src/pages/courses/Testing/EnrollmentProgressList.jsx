@@ -1,6 +1,6 @@
 // EnrollmentProgressList.jsx
 import React, { useEffect, useState } from "react";
-
+import {showToast} from "../../../components/toast";
 import { fetchProgressAll, deleteProgress } from "../../../api/courses/progress";
 
 const EnrollmentProgressList = () => {
@@ -14,7 +14,7 @@ const EnrollmentProgressList = () => {
       setProgressList(response);
     } catch (error) {
       console.error("Error fetching course progress:", error);
-      alert("Failed to fetch course progress.");
+      showToast("Failed to fetch course progress.","top-center",10000,"dark");
     } finally {
       setLoading(false);
     }
@@ -27,11 +27,11 @@ const EnrollmentProgressList = () => {
 
     try {
       await deleteProgress(userId, courseId);
-      alert("Progress deleted successfully");
+      showToast("Progress deleted successfully","top-center",10000,"dark");
       fetchProgress(); // Refresh the list
     } catch (error) {
       console.error("Error deleting progress:", error);
-      alert("Failed to delete progress.");
+      showToast("Failed to delete progress.","top-center",10000,"dark");
     }
   };
 

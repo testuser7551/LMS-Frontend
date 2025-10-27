@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { fetchCoursesAPI, deleteCourseAPI } from "../../../api/courses/courses";
+import {showToast} from "../../../components/toast";
 const API_BASE = import.meta.env.VITE_API_BASE;
 
 const AllCourses = () => {
@@ -11,7 +12,7 @@ const AllCourses = () => {
       const coursesData = await fetchCoursesAPI();
       setCourses(coursesData);
     } catch (error) {
-      alert("Failed to fetch courses.");
+      showToast("Failed to fetch courses.","top-center",10000,"dark");
     }
   };
 
@@ -26,9 +27,9 @@ const AllCourses = () => {
     try {
       await deleteCourseAPI(courseId);
       setCourses(courses.filter((course) => course._id !== courseId));
-      alert("Course deleted!");
+      showToast("Course deleted!","top-center",10000,"dark");
     } catch (error) {
-      alert("Failed to delete course.");
+      showToast("Failed to delete course.","top-center",10000,"dark");
     }
   };
   return (

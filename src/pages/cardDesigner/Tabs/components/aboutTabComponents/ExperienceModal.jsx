@@ -1,7 +1,8 @@
-import React, { useState ,useEffect} from "react";
+import React, { useState, useEffect, useContext } from "react";
 import CustomDropdown from "../common/CustomDropdown"; // adjust path
 import { showToast } from "../../../../../components/toast"; // ✅ import your toast util
-import { saveExperienceSection,updateExperienceById } from "../../../../../api/carddesign/contentSection";
+import { saveExperienceSection, updateExperienceById } from "../../../../../api/carddesign/contentSection";
+import { CardContext } from '../../../../../context/CardContext';
 const months = [
     { label: "January", value: "January" },
     { label: "February", value: "February" },
@@ -26,7 +27,7 @@ const years = Array.from(
 ).reverse();
 
 function ExperienceModal({ onClose, onSave, initialData }) {
-
+    const { userCard } = useContext(CardContext);
     const [formData, setFormData] = useState({
         title: "",
         company: "",
@@ -82,31 +83,39 @@ function ExperienceModal({ onClose, onSave, initialData }) {
                 showToast("Start date cannot be after end date");
                 return false;
             }
+
         }
         return true;
     };
 
     const handleSubmit = async () => {
-    if (!validateForm()) return;
+        if (!validateForm()) return;
 
-    try {
-        let savedData;
-        if (initialData?._id) {
-            // Update API call
-            savedData = await updateExperienceById(initialData._id, formData);
-            showToast("Experience updated successfully!");
-        } else {
-            // Add new
-            savedData = await saveExperienceSection(formData);
-            showToast("Saved Experience Successfully!");
+        try {
+            let savedData;
+            if (initialData?._id) {
+                // Update API call
+                const payload = {
+                    experience: formData,
+                    user_id: userCard?.user_id || "",
+                };
+                savedData = await updateExperienceById(initialData._id,payload);
+                showToast("Experience updated successfully!");
+            } else {
+                const payload = {
+                    experience: formData,
+                    user_id: userCard?.user_id || "",
+                };
+                savedData = await saveExperienceSection(payload);
+                showToast("Saved Experience Successfully!");
+            }
+
+            onSave(savedData.experience);
+            onClose();
+        } catch (error) {
+            showToast("Failed to Save Experience");
         }
-
-        onSave(savedData.experience);
-        onClose();
-    } catch (error) {
-        showToast("Failed to Save Experience");
-    }
-};
+    };
 
 
     return (

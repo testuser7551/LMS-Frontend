@@ -92,6 +92,8 @@ const Cert1 = () => {
     pdf.save("certificate.pdf");
   };
 
+
+  
   return (
     <div className="w-full flex justify-center flex-col items-center mt-16">
       {/* Certificate Wrapper */}

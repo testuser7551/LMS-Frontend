@@ -253,10 +253,13 @@
 // export default ThreadList;
 
 // src/pages/Discussion/components/ThreadList.jsx
-import React from "react";
-import { MessageSquare, Heart, TriangleAlert } from "lucide-react";
+import React, { useContext, useState } from "react";
+import { MessageSquare, Heart, TriangleAlert, Trash2 } from "lucide-react";
 import UserRole from "./UserRole";
 import SearchBar from "./SearchBar";
+import LikeButton from "./LikeButton";
+import { AuthContext } from "../../../context/AuthContext";
+import ConfirmModal from "./ConfirmModal";
 
 const ThreadList = ({
   threads,
@@ -265,6 +268,7 @@ const ThreadList = ({
   onNewThread,
   onLike,
   searchQuery,
+  onDelete
 }) => {
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -274,6 +278,10 @@ const ThreadList = ({
       year: "numeric",
     });
   };
+
+  const { user } = useContext(AuthContext);
+    const [showConfirm, setShowConfirm] = useState(false);
+
 
   const isAvailable = (thread) => {
     const now = new Date();
@@ -354,7 +362,7 @@ const ThreadList = ({
 
             return (
               <div
-                key={thread.id}
+                key={thread._id}
                 className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition"
               >
                 {/* Unavailable badge */}
@@ -368,26 +376,40 @@ const ThreadList = ({
                 )}
 
                 {/* Title */}
-                <button
-                  onClick={() => onThreadSelect(thread.id)}
-                  className="text-left block"
-                >
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3 hover:text-[var(--color-btn-primary-hover)] transition-colors cursor-pointer font-poppins">
-                    {thread.title}
-                  </h3>
-                </button>
+                <div className="flex items-center justify-between">
+                  <button
+                    onClick={() => onThreadSelect(thread.id)}
+                    className="text-left block"
+                  >
+                    <h3 className="text-lg font-semibold text-gray-900 mb-3 hover:text-[var(--color-btn-primary-hover)] transition-colors cursor-pointer font-poppins">
+                      {thread.title}
+                    </h3>
+                  </button>
+{/* onDelete(thread._id) */}
+                  <button onClick={()=> {setShowConfirm(true); onDelete(thread._id)} } className="p-2 bg-red-400 rounded-full shadow-md hover:bg-red-500 hover:scale-105 transition-transform duration-200 cursor-pointer">
+                    <Trash2 className="text-white w-5 h-5" />
+                  </button>
+                </div>
+      {showConfirm && (
+        <ConfirmModal
+          title="Delete Discussion"
+          message="Are you sure you want to delete this discussion? This action cannot be undone."
+          // onConfirm={handleConfirm}
+          onCancel={() => setShowConfirm(false)}
+        />
+      )}
 
                 {/* Author info */}
                 <div className="flex items-center space-x-2 text-sm text-gray-600 mb-4 font-poppins">
                   <img
-                    src={thread.author.avatar}
-                    alt={thread.author.name}
+                    src={thread?.user?.avatar || '/assets/images/sidebar/profile.png'}
+                    alt={thread?.user?.name}
                     className="h-8 w-8 rounded-full object-cover"
                   />
                   <span className="font-bold font-poppins">
-                    {thread.author.name}
+                    {thread?.user?.name}
                   </span>
-                  <UserRole role={thread.author.role} />
+                  <UserRole role={thread?.user?.role} />
                   <span className="text-gray-400">•</span>
                   <span>{formatDate(thread.createdAt)}</span>
                 </div>
@@ -436,29 +458,16 @@ const ThreadList = ({
                       <MessageSquare className="h-4 w-4" />
                       <span>{thread.replyCount} replies</span>
                     </div>
-
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onLike(thread.id);
-                      }}
-                      className={`flex items-center cursor-pointer space-x-1 transition ${
-                        thread.isLiked
-                          ? "text-primary hover:text-primary"
-                          : "hover:text-gray-900 text-gray-600"
-                      }`}
-                    >
-                      <Heart
-                        className={`h-4 w-4 ${
-                          thread.isLiked ? "fill-current" : ""
-                        }`}
-                      />
-                      <span>{thread.likes}</span>
-                    </button>
+                    <LikeButton
+                      isLiked={thread?.likes?.length > 0 ? thread?.likes?.includes(user._id) : false}
+                      count={thread?.likes?.length || 0}
+                      onClick={() => onLike(thread._id)}
+                      size="sm"
+                    />
                   </div>
 
                   <button
-                    onClick={() => onThreadSelect(thread.id)}
+                    onClick={() => onThreadSelect(thread._id)}
                     className="text-sm font-medium text-gray-800 hover:text-gray-900 transition cursor-pointer"
                   >
                     View Discussion →

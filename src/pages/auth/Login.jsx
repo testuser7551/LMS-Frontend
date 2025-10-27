@@ -17,6 +17,15 @@ const LoginPage = () => {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
+
+
+
+
+
+
+
+  
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
@@ -24,9 +33,14 @@ const LoginPage = () => {
 
     try {
       const loggedUser = await loginUser(email, password);
+      console.log("loggedUser",loggedUser);
       setUserContext(loggedUser);
       showToast('Login Successful', "top-center", 10000, "dark");
+      if(loggedUser.role==="superAdmin"){
+        navigate('/superadmin');
+      }else{
       navigate('/courses')  // redirect after login
+      }
     } catch (err) {
       // setError(err.message || 'Invalid credentials')
       showToast('Invalid credentials', "top-center", 10000, "dark");

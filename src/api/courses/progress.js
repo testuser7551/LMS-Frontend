@@ -99,3 +99,14 @@ export const deleteProgress = async (userId, courseId) => {
         throw error;
     }
 };
+
+
+export const fullProgress = async (userId, courseId) => {
+    try {
+        const res = await postRequest(`${BASE_PATH}/full-progress`, { userId, courseId });
+        return res;
+    } catch (error) {
+        console.error("Error fetching full progress:", error);
+        throw error;
+    }
+};

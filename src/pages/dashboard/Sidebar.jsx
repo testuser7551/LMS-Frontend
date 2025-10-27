@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 import {
@@ -18,9 +18,10 @@ import {
   Menu,
   X,
   QrCode,
-  IdCard
+  IdCard,
+  ShieldUser
 } from "lucide-react";
-import { logoutUser } from "../../api/auth";
+import { FiEdit2 } from "react-icons/fi";
 import { ToolTip } from "../../components/ToolTip"
 
 // Sidebar items with role-based access
@@ -32,13 +33,15 @@ const sidebarTitles = {
   instructor: "Instructor Hub",
   mentor: "Mentor Space",
 };
+const API_BASE = import.meta.env.VITE_API_BASE;
+const Sidebar = ({ setIsProfileModalOpen }) => {
 
-const Sidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
+
   const sidebarItems = [
     // {
     //   icon: Home,
@@ -47,10 +50,28 @@ const Sidebar = () => {
     //   roles: ["student", "admin", "instructor", "mentor"],
     // },
     {
+      icon: Home,
+      label: "Home",
+      tab: "dashboard",
+      roles: ["superAdmin"],
+    },
+    {
+      icon: Home,
+      label: "Academic Institution",
+      tab: "academic",
+      roles: ["superAdmin"],
+    },
+    {
       icon: BookOpen,
       label: "Courses",
       tab: "courses",
       roles: ["student", "admin", "instructor"],
+    },
+    {
+      icon: MessageCircle,
+      label: "Discussions",
+      tab: "discussions",
+      roles: ["student", "admin", "instructor", "mentor"],
     },
     {
       icon: QrCode,
@@ -58,12 +79,39 @@ const Sidebar = () => {
       tab: "qrcode",
       roles: ["student", "admin"],
     },
+
+    
+    // {
+    //   icon: CreditCard,
+    //   label: "Card Designer",
+    //   tab: `${user.role === "admin" ? "admincard" : "mycard"}`,
+    //   roles: ["student", "admin"],
+    // },
+
+    // { icon: CreditCard, label: "New Card", tab: "editcard", roles: ["admin"] },
+
     {
       icon: CreditCard,
-      label: "Card Designer",
-      tab: `${user.role === "admin" ? "admincard" : "mycard"}`,
-      roles: ["student", "admin"],
+      label: "My Card",
+      tab: "mycard",
+      roles: [ "admin", "instructor", "mentor"],
     },
+
+
+     {
+      icon: CreditCard,
+      label: "Card Designer",
+      tab: "mycard",
+      roles: ["student"],
+    },
+    {
+      icon: CreditCard,
+      label: "View Cards",
+      tab: "admincard",
+      roles: ["admin"]
+    },
+
+    
     {
       icon: IdCard,
       label: "My Card",
@@ -71,13 +119,26 @@ const Sidebar = () => {
       roles: ["student"],
     },
 
-    { icon: CreditCard, label: "New Card", tab: "editcard", roles: ["admin"] },
+  
     {
-      icon: MessageCircle,
-      label: "Discussions",
-      tab: "discussions",
-      roles: ["student", "admin", "instructor", "mentor"],
+      icon: ShieldUser,
+      label: "User Management",
+      tab: "users",
+      roles: ["admin"],
     },
+    {
+      icon: ShieldUser,
+      label: "User Management",
+      tab: "single-user",
+      roles: ["instructor"],
+    },
+    
+    // {
+    //   icon: ShieldUser,
+    //   label: "Student Management",
+    //   tab: "users",
+    //   roles: ["instructor", "mentor"],
+    // },
   ];
 
   const query = new URLSearchParams(location.search);
@@ -95,7 +156,8 @@ const Sidebar = () => {
   );
 
   const SidebarContent = () => (
-    <div className="">
+    <div className={`fixed border-r border-gray-300 h-screen shadow-[0_0px_5px_0px_rgba(0,0,0,0.3)] ${isCollapsed ? "w-16" : "w-64"
+      }`}>
       {/* Header (hidden if no title for this role) */}
       {sidebarTitles[user?.role] && (
         <div className="p-3 sm:p-4 border-b border-headcolor flex items-center justify-between">
@@ -133,11 +195,22 @@ const Sidebar = () => {
       {/* User Profile */}
       {(!isCollapsed || isMobileOpen) && (<div className={`pl-3 pt-3 sm:p-2 flex flex-wrap justify-between border-b border-gray-200 ${(!isCollapsed || isMobileOpen) ? "flex-wrap" : ""}`}>
         <div className="w-[80%] flex items-center space-x-2 sm:space-x-3">
-          <img
-            src={user?.avatar || `/assets/images/sidebar/profile.png`}
+          <div className="relative"> <img
+            // src={user?.avatar || `/assets/images/sidebar/profile.png`}
+            src={
+              user?.avatar
+                ? `${API_BASE}${user?.avatar}`
+                : "/assets/images/sidebar/profile.png"
+            }
             alt={user?.name}
             className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
           />
+            <button
+              onClick={() => setIsProfileModalOpen(true)}
+              className="absolute bottom-0 right-0 bg-white rounded-full p-1 shadow-md hover:bg-gray-200">
+              <FiEdit2 className="w-2 h-2" />
+            </button>
+          </div>
           {(!isCollapsed || isMobileOpen) && (
             <div className="flex-1 min-w-0">
               <p className="text-lg font-bold text-headtext truncate font-poppins">
@@ -146,18 +219,31 @@ const Sidebar = () => {
               <p className="text-xs text-headtext capitalize font-poppins">
                 {user?.role}
               </p>
+              {user?.role === "student" && (!isCollapsed || isMobileOpen) && (
+                <button
+                  onClick={() => {
+                    navigate("/courses/profile");
+                    setIsMobileOpen(false);
+                  }}
+                  className="mt-1 text-xs text-blue-600 hover:underline font-poppins"
+                >
+                  View Profile
+                </button>
+              )}
+
             </div>
           )}
         </div>
+
         <div className="w-[20%] p-3 sm:py-2 sm:px-2">
           <ToolTip id="logout" content="Logout">
             <button
               onClick={() => {
-                logoutUser();
+                localStorage.removeItem("token");
                 setIsMobileOpen(false);
                 navigate("/");
               }}
-              className="cursor-pointer w-full group flex flex-col items-center px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg hover:bg-red-200 bg-red-50  transition-all duration-200 "
+              className="cursor-pointer group flex flex-col items-center px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg hover:bg-red-200 bg-red-50  transition-all duration-200 "
             >
               <LogOut
                 size={20}
@@ -168,7 +254,7 @@ const Sidebar = () => {
           </ToolTip>
         </div>
       </div>)}
-      {(isCollapsed && isMobileOpen!==true) && (<div className="sm:p-3 flex gap-2 justify-between border-b border-gray-200 flex-wrap">
+      {(isCollapsed && isMobileOpen !== true) && (<div className="sm:p-3 flex gap-2 justify-between border-b border-gray-200 flex-wrap">
         <div className="flex items-center space-x-2 sm:space-x-3">
           <img
             src={user?.avatar || `/assets/images/sidebar/profile.png`}
@@ -180,11 +266,11 @@ const Sidebar = () => {
           <ToolTip id="logout" content="Logout">
             <button
               onClick={() => {
-                logoutUser();
+                localStorage.removeItem("token")
                 setIsMobileOpen(false);
                 navigate("/");
               }}
-              className="cursor-pointer w-full group flex flex-col items-center px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg hover:bg-red-200 bg-red-50  transition-all duration-200"
+              className="cursor-pointer group flex flex-col items-center px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg hover:bg-red-200 bg-red-50  transition-all duration-200"
             >
               <LogOut
                 size={20}
@@ -196,7 +282,7 @@ const Sidebar = () => {
         </div>
       </div>)}
       {/* Navigation */}
-      <nav className="flex-1 p-3 sm:p-4 space-y-1 overflow-y-auto">
+      <nav className="flex-1 p-2 space-y-2 ">
         {filteredItems.map((item) => {
           const IconComponent = item.icon;
           const isActive = activeTab === item.tab;
@@ -204,16 +290,21 @@ const Sidebar = () => {
           return (
             <button
               key={item.label}
+           
               onClick={() => {
                 if (item.tab === "courses") {
                   navigate("/courses");
+                } else if (item.tab === "academic") {
+                  navigate("/superadmin/academic");
+                } else if (item.tab === "single-user" && user.role === "instructor") {
+                  navigate(`/courses/single-user/${user._id}`);
                 } else if (item.tab) {
                   navigate(`/courses/${item.tab}`);
                 } else if (item.path) {
                   navigate(item.path);
                 }
                 setIsMobileOpen(false);
-              }}
+              }}              
               title={isCollapsed ? item.label : ""}
               className={`w-full flex items-center font-bold cursor-pointer ${isCollapsed ? "justify-start" : "justify-start"
                 } space-x-2 sm:space-x-3 px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg text-left transition-all duration-200 group ${isActive
@@ -234,6 +325,7 @@ const Sidebar = () => {
           );
         })}
       </nav>
+
     </div>
   );
 
@@ -258,7 +350,7 @@ const Sidebar = () => {
       {/* Desktop Sidebar */}
       <div
         className={`hidden lg:flex ${isCollapsed ? "w-16" : "w-64"
-          } bg-white border-r border-gray-200 transition-all duration-300 flex-col h-screen shadow-sm`}
+          } transition-all duration-300 flex-col h-screen `}
       >
         <SidebarContent />
       </div>

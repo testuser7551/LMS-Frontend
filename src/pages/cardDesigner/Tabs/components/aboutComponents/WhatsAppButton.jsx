@@ -1,11 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import {
   updateWhatsappButton,
 } from "../../../../../api/carddesign/aboutSection";
 import { showToast } from "../../../../../components/toast.js";
+import { CardContext } from '../../../../../context/CardContext';
 
 
 const WhatsAppButton = ({ whatsappButton, onChange }) => {
+  const { userCard } = useContext(CardContext);
   //  Format input as (123) 456-7890
   const formatPhoneNumber = (value) => {
     if (!value) return value;
@@ -51,8 +53,11 @@ const WhatsAppButton = ({ whatsappButton, onChange }) => {
       try {
         const cleanedNumber = whatsappButton?.whatsappNumber.replace(/\D/g, "");
         const payload = {
-          ...whatsappButton,
-          whatsappNumber: cleanedNumber, // store digits only in DB
+          whatsappButton: {
+            ...whatsappButton,
+            whatsappNumber: cleanedNumber, // ✅ store digits only in DB
+          },
+          user_id: userCard?.user_id || "",
         };
         const saved = await updateWhatsappButton(payload);
         // setWhatsapp(saved);

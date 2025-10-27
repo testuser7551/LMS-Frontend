@@ -373,12 +373,12 @@ const ThreadDetail = ({
         <div className="flex items-center justify-between text-sm text-gray-500 mb-6">
           <div className="flex items-center space-x-2">
             <img
-              src={thread.author.avatar}
-              alt={thread.author.name}
+              src={thread?.author?.avatar}
+              alt={thread?.author?.name}
               className="h-8 w-8 rounded-full object-cover"
             />
-            <span className=" text-gray-900 font-bold font-poppins">{thread.author.name}</span>
-            <UserRole role={thread.author.role} />
+            <span className=" text-gray-900 font-bold font-poppins">{thread?.author?.name}</span>
+            <UserRole role={thread?.author?.role} />
           </div>
           <span className="font-poppins">Created on {formatDate(thread.createdAt)}</span>
         </div>

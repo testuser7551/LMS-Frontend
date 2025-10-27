@@ -16,6 +16,7 @@ import {
   getLessonProgressAPI,
   markLessonCompleteAPI,
   submitQuizAPI,
+  fullProgress,
 } from "../../../api/courses/progress";
 const API_BASE = import.meta.env.VITE_API_BASE;
 import { AuthContext } from "../../../context/AuthContext";
@@ -38,6 +39,7 @@ const Lesson = ({ lesson, number, setPercentage , isEnrolled }) => {
   const [showAudioPlayer, setShowAudioPlayer] = useState(false);
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
+  const [quizPopupData, setQuizPopupData] = useState(null);
 
   const [activeTabs, setActiveTabs] = useState(() => {
     const tabs = {};
@@ -85,7 +87,7 @@ const Lesson = ({ lesson, number, setPercentage , isEnrolled }) => {
     setActiveTabs((prev) => ({ ...prev, [secId]: index }));
   };
 
-  const [quizPopupData, setQuizPopupData] = useState(null);
+
 
   useEffect(() => {
     const checkQuizStatus = async () => {
@@ -96,18 +98,27 @@ const Lesson = ({ lesson, number, setPercentage , isEnrolled }) => {
           lesson.chapterId,
           lesson._id
         );
+        console.log(result.completed);
+
         if (result.completed) {
           setQuizCompleted(true);
+          setIsCompleted(true);
         }
+        const response = await fullProgress(user._id, lesson.courseId);
+        console.log(response.percentage);
+        const progressPercent = response.percentage;
+
+        setPercentage(progressPercent);
       } catch (error) {
         console.error("Failed to check quiz status", error);
       }
     };
-
     if (user && user._id && lesson) {
       checkQuizStatus();
     }
-  }, [user, lesson]);
+  }, [user]);
+  
+
 
   const handleStartQuiz = async () => {
     if (lesson.quiz && lesson.quiz.length > 0) {
@@ -152,26 +163,6 @@ const Lesson = ({ lesson, number, setPercentage , isEnrolled }) => {
       showError("Failed to download the file.");
     }
   };
-
-  useEffect(() => {
-    const fetchLessonStatus = async () => {
-      try {
-        const result = await getLessonProgressAPI(
-          user._id,
-          lesson.courseId,
-          lesson.chapterId,
-          lesson._id
-        );
-        setIsCompleted(result.completed);
-      } catch (error) {
-        console.error("Error loading lesson status", error);
-      }
-    };
-
-    if (user && lesson) {
-      fetchLessonStatus();
-    }
-  }, [user, lesson]);
 
   const handleMarkComplete = async () => {
     try {

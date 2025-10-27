@@ -1,46 +1,8 @@
-// // src/pages/cardDesigner/Tabs/components/styleComponents/FontStyle.jsx
-// import React from "react";
-
-// const fonts = [
-//   { label: "Inter", value: "Inter, sans-serif" },
-//   { label: "Roboto", value: "Roboto, sans-serif" },
-//   { label: "Open Sans", value: "'Open Sans', sans-serif" },
-//   { label: "Lato", value: "Lato, sans-serif" },
-//   { label: "Poppins", value: "Poppins, sans-serif" },
-// ];
-
-// const FontStyle = ({ fontFamily, onChange }) => {
-//   return (
-//     <div className="bg-white shadow-sm border border-gray-200 rounded-xl p-6">
-//       <h3 className="text-base font-semibold text-[var(--color-headtext)] mb-3 font-outfit">
-//         Font
-//       </h3>
-
-//       <select
-//         value={fontFamily || fonts[0].value}
-//         onChange={(e) => onChange(e.target.value)}
-//         className="w-full px-4 py-2 rounded-md border border-gray-300 bg-[var(--color-bgcolor)]
-//              text-[var(--color-text)] font-medium focus:ring-2
-//              focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)]
-//              appearance-none font-poppins transition duration-200
-//              bg-no-repeat bg-[right_1rem_center] bg-[length:1em_1em]"
-//       >
-//         {fonts.map((font) => (
-//           <option key={font.value} value={font.value}>
-//             {font.label}
-//           </option>
-//         ))}
-//       </select>
-//     </div>
-//   );
-// };
-
-// export default FontStyle;
-
 import Select from "react-select";
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { saveFontSection } from "../../../../../api/carddesign/styleSection";
-
+import { CardContext } from '../../../../../context/CardContext';
+import {showToast} from "../../../../../components/toast";
 const fonts = [
   { label: "Inter", value: "Inter, sans-serif" },
   { label: "Roboto", value: "Roboto, sans-serif" },
@@ -71,6 +33,7 @@ const customStyles = {
 };
 
 const FontStyle = ({ fontFamily, onChange }) => {
+  const { userCard } = useContext(CardContext);
   const selectedOption = fonts.find((f) => f.value === fontFamily) || fonts[0];
   const [saving, setSaving] = useState(false);
 
@@ -78,11 +41,15 @@ const FontStyle = ({ fontFamily, onChange }) => {
   const handleSave = async () => {
     try {
       setSaving(true);
-      await saveFontSection(selectedOption.value);
-      alert("✅ Font style saved!");
+      const payload = {
+        fontStyle: selectedOption.value,
+        user_id: userCard?.user_id || "",
+      };
+      await saveFontSection(payload);
+      showToast("✅ Font style saved!","top-center",10000,"dark");
     } catch (err) {
       //console.error("Save font style error:", err);
-      alert("❌ Failed to save font style");
+      showToast("❌ Failed to save font style","top-center",10000,"dark");
     } finally {
       setSaving(false);
     }

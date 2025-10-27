@@ -15,6 +15,7 @@ import { useNavigate } from "react-router-dom";
 const Header = ({ course, setIsEnrolled, isEnrolled }) => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
+  const [enrolledCount, setEnrolledCount] = useState(0);
 
   const [isErrorOpen, setIsErrorOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -29,7 +30,7 @@ const Header = ({ course, setIsEnrolled, isEnrolled }) => {
   const [modalMessage, setModalMessage] = useState("");
 
   const showSuccess = (message) => {
-    setModalMessage(message);
+    setModalMessage(message); 
     setIsModalOpen(true);
   };
 
@@ -38,46 +39,33 @@ const Header = ({ course, setIsEnrolled, isEnrolled }) => {
     setIsModalOpen(false);
   };
 
-  
-  const [enrolledCount, setEnrolledCount] = useState(0);
+
+
+
   useEffect(() => {
-    const fetchEnrollmentCount = async () => {
+    const fetchEnrollmentData = async () => {
+      if (!course?._id || !user?._id) return;
+
       try {
-        const data = await getEnrolledCourseCountAPI(course._id);
-        if (data.success) {
-          setEnrolledCount(data.enrolledCount);
+        //  Get enrolled count
+        if (user.role === "admin") {
+          const countData = await getEnrolledCourseCountAPI(course._id);
+          if (countData.success) setEnrolledCount(countData.enrolledCount);
         }
-      } catch (error) {
-        console.error("Failed to get enrolled count:", error);
-      }
-    };
-
-    if (course && course._id) {
-      fetchEnrollmentCount();
-    }
-  }, [course]);
-
-  useEffect(() => {
-    const checkEnrollment = async () => {
-      try {
-        const data = await getEnrollment(user._id);
-
-        const enrollment = data.enrollments.find(
+        //  Check if the user is enrolled
+        const enrollmentData = await getEnrollment(user._id);
+        const enrollment = enrollmentData.enrollments.find(
           (e) => e.course._id === course._id
         );
-
-        if (enrollment) {
-          setIsEnrolled(true);
-        }
+        if (enrollment) setIsEnrolled(true);
       } catch (error) {
-        console.error("Failed to check enrollment", error);
+        console.error("Failed to fetch enrollment data:", error);
       }
     };
 
-    if (user && user._id && course && course._id) {
-      checkEnrollment();
-    }
+    fetchEnrollmentData();
   }, [user, course]);
+
 
   const totalLessons = course.chapters.reduce(
     (sum, chapter) =>
@@ -135,8 +123,8 @@ const Header = ({ course, setIsEnrolled, isEnrolled }) => {
     } catch (error) {
       showError(
         error.response?.data?.message ||
-          error.message ||
-          "Failed to delete course."
+        error.message ||
+        "Failed to delete course."
       );
     }
   };

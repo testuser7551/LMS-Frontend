@@ -1,19 +1,20 @@
 
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { X } from "lucide-react";
 import FileDropzone from "../../../components/FileDropzone";
 import { saveGalleryImageAPI } from "../../../../../api/carddesign/contentSection"; // API call
 import { showToast } from "../../../../../components/toast.js";
-
+import { CardContext } from '../../../../../context/CardContext';
 
 function GallerySection({ gallerySections, onChange }) {
+  const { userCard } = useContext(CardContext);
   const [uploading, setUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null); // ✅ real file state
 
   const handleSave = async () => {
     try {
       // If no file selected & no existing image → block save
-      if (!selectedFile && !gallerySections.image) {
+      if (!selectedFile && !gallerySections?.image) {
         showToast('Please upload an image before saving!', "top-center", 5000, "dark");
         return;
       }
@@ -25,13 +26,16 @@ function GallerySection({ gallerySections, onChange }) {
       if (selectedFile) {
         formData.append("image", selectedFile); // send file if new one selected
       }
-      formData.append("isEnabled", gallerySections.isEnabled);
+      formData.append("isEnabled", gallerySections?.isEnabled);
 
       // Optional link
-      if (gallerySections.link) {
-        formData.append("link", gallerySections.link);
+      if (gallerySections?.link) {
+        formData.append("link", gallerySections?.link);
       }
-
+      // ✅ Add user_id if available
+      if (userCard?.user_id) {
+        formData.append("user_id", userCard.user_id);
+      }
       const result = await saveGalleryImageAPI(formData);
       showToast('Gallery Section saved successfully!', "top-center", 5000, "dark");
     } catch (err) {
@@ -53,18 +57,18 @@ function GallerySection({ gallerySections, onChange }) {
           <label className="flex items-center cursor-pointer">
             <input
               type="checkbox"
-              checked={gallerySections.isEnabled}
+              checked={gallerySections?.isEnabled}
               onChange={(e) => onChange("isEnabled", e.target.checked)}
               className="sr-only"
             />
             <span
-              className={`w-10 h-5 flex items-center rounded-full p-1 duration-300 ease-in-out ${gallerySections.isEnabled
+              className={`w-10 h-5 flex items-center rounded-full p-1 duration-300 ease-in-out ${gallerySections?.isEnabled
                 ? "bg-[var(--color-btn-primary)]"
                 : "bg-[var(--color-btn-secondary)]"
                 }`}
             >
               <span
-                className={`bg-[var(--color-bgcolor)] w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out ${gallerySections.isEnabled ? "translate-x-5" : ""
+                className={`bg-[var(--color-bgcolor)] w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out ${gallerySections?.isEnabled ? "translate-x-5" : ""
                   }`}
               />
             </span>
@@ -74,7 +78,7 @@ function GallerySection({ gallerySections, onChange }) {
 
       {/* File Upload */}
       <div className="space-y-3">
-        {!gallerySections.image ? (
+        {!gallerySections?.image ? (
           <FileDropzone
             file={null}
             setFile={(file) => {
@@ -87,7 +91,7 @@ function GallerySection({ gallerySections, onChange }) {
         ) : (
           <div className="relative w-40 h-40">
             <img
-              src={gallerySections.image}
+              src={gallerySections?.image}
               alt="Preview"
               className="w-40 h-40 object-cover rounded border border-[var(--color-secondarybgcolor)]"
             />
@@ -111,11 +115,11 @@ function GallerySection({ gallerySections, onChange }) {
           placeholder="Enter optional link"
           className="w-full px-3 py-2 border border-[var(--color-secondarybgcolor)] rounded-lg mb-4 font-Poppins text-[var(--color-text)] placeholder-[var(--color-subtext)]"
         /> */}
-                {gallerySections.imgUrl && (
-  <p className="text-sm font-Poppins text-[var(--color-subtext)] break-all">
-    {gallerySections.imgUrl.split("/").pop()}
-  </p>
-)}
+        {gallerySections?.imgUrl && (
+          <p className="text-sm font-Poppins text-[var(--color-subtext)] break-all">
+            {gallerySections?.imgUrl.split("/").pop()}
+          </p>
+        )}
 
         {/* Save button */}
         <div className="flex justify-end mt-3">

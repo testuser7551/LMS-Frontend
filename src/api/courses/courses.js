@@ -19,6 +19,20 @@ export const fetchCoursesAPI = async () => {
     }
 };
 
+
+export const fetchAssignedCoursesAPI = async (instructorId) => {
+  try {
+    const response = await api.get(`${BASE_URL}/assigned/usercourses`, {
+      params: { instructorId },
+    });
+    console.log(response.data);
+    return response.data.fullCourses || [];
+  } catch (error) {
+    console.error("Error fetching assigned courses:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
 // Fetch course by ID
 export const fetchCourseByIdAPI = async (courseId) => {
     try {

@@ -1,12 +1,14 @@
-import React, { useState } from 'react'
+import React, { useState, useContext } from 'react'
 import { ExperienceModal } from "./ExperienceModal"
 import { Pencil, Trash } from 'lucide-react';
 import {
     updateExperienceMeta, deleteExperience
 } from "../../../../../api/carddesign/contentSection";
 import { showToast } from "../../../../../components/toast.js";
+import { CardContext } from '../../../../../context/CardContext';
 
 function ExperienceSection({ experienceSection, onChange }) {
+    const { userCard } = useContext(CardContext);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingExp, setEditingExp] = useState(null);
     // save title and enabled button
@@ -21,7 +23,9 @@ function ExperienceSection({ experienceSection, onChange }) {
             //  Proceed with saving
             const payload = {
                 experienceTitle: experienceSection?.experienceTitle,
-                isEnabled: experienceSection?.isEnabled
+                isEnabled: experienceSection?.isEnabled,
+                user_id: userCard?.user_id || "",
+
             }
             const saved = await updateExperienceMeta(payload);
             showToast('Experience saved successfully!', "top-center", 3000, "dark");
@@ -119,11 +123,11 @@ function ExperienceSection({ experienceSection, onChange }) {
                                 >
                                     {/* Experience Info */}
                                     <div className='flex flex-col justify-center flex-wrap w-full h-full flex-1'>
-                                        <h3 className="font-bold text-lg text-black">{exp.title}</h3>
-                                        <p className="text-md text-secondary">{exp.company}</p>
+                                        <h3 className="font-bold text-lg text-black">{exp?.title}</h3>
+                                        <p className="text-md text-secondary">{exp?.company}</p>
                                         <p className="text-sm text-secondary">
-                                            {exp.startDate?.month} {exp.startDate?.year} –{" "}
-                                            {exp.currentlyWorking
+                                            {exp?.startDate?.month} {exp?.startDate?.year} –{" "}
+                                            {exp?.currentlyWorking
                                                 ? "Present"
                                                 : `${exp.endDate?.month} ${exp.endDate?.year}`}
                                         </p>
@@ -146,7 +150,7 @@ function ExperienceSection({ experienceSection, onChange }) {
                                         <button
                                             onClick={async () => {
                                                 try {
-                                                    await deleteExperience(exp._id); // API call
+                                                    await deleteExperience(exp._id, { user_id:userCard?.user_id}); // API call
                                                     const updated = experienceSection.experienceData.filter(
                                                         (item) => item._id !== exp._id
                                                     );
@@ -164,44 +168,49 @@ function ExperienceSection({ experienceSection, onChange }) {
                                 </div>
                             ))}
                     </div>
-
-
                     {/* Add Experience button */}
+
+                </>
+            )
+            }
+            {
+                experienceSection.isEnabled && (
                     <button
                         className="bg-[var(--color-btn-primary)] hover:bg-[var(--color-btn-primary-hover)] text-[var(--color-bgcolor)] px-4 py-2 rounded-lg cursor-pointer"
                         onClick={() => setIsModalOpen(true)}>
                         Add Experience
                     </button>
-                    {/* Modal for Add/Edit */}
-                    {isModalOpen && (
-                        <ExperienceModal
-                            onClose={() => {
-                                setIsModalOpen(false);
-                                setEditingExp(null);
-                            }}
-                            initialData={editingExp} // pass data if editing
-                            onSave={(newExp) => {
-                                if (editingExp) {
-                                    // Update existing
-                                    const updated = experienceSection.experienceData.map((item) =>
-                                        item._id === editingExp._id ? newExp : item
-                                    );
-                                    onChange("experienceData", updated);
-                                } else {
-                                    // Add new
-                                    onChange("experienceData", [
-                                        ...experienceSection.experienceData,
-                                        newExp,
-                                    ]);
-                                }
-                                setEditingExp(null);
-                            }}
-                        />
-                    )}
-
-                </>
-            )
+                )
             }
+
+            {/* Modal for Add/Edit */}
+            {isModalOpen && (
+                <ExperienceModal
+                    onClose={() => {
+                        setIsModalOpen(false);
+                        setEditingExp(null);
+                    }}
+                    initialData={editingExp} // pass data if editing
+                    onSave={(newExp) => {
+                        if (editingExp) {
+                            // Update existing
+                            const updated = experienceSection.experienceData.map((item) =>
+                                item._id === editingExp._id ? newExp : item
+                            );
+                            onChange("experienceData", updated);
+                        } else {
+                            // Add new
+                            onChange("experienceData", [
+                                ...experienceSection.experienceData,
+                                newExp,
+                            ]);
+                        }
+                        setEditingExp(null);
+                    }}
+                />
+            )}
+
+
         </div >
     )
 }

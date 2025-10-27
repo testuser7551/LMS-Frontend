@@ -1,12 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { X } from "lucide-react";
 import {
   updateContentAbout,
 } from "../../../../../api/carddesign/contentSection";
 import { showToast } from "../../../../../components/toast.js";
+import { CardContext } from '../../../../../context/CardContext';
 
 function AboutMeSection({ textSection, onChange }) {
-
+  const { userCard } = useContext(CardContext);
   const handleSave = async () => {
     try {
       if (textSection.isEnabled) {
@@ -23,11 +24,14 @@ function AboutMeSection({ textSection, onChange }) {
           showToast('Content  Required', "top-center", 3000, "dark");
           return;
         }
-
+        const payload = {
+          textSection: textSection,
+          user_id: userCard?.user_id || "",
+        };
         //  Proceed with saving
-        const saved = await updateContentAbout(textSection);
+        const saved = await updateContentAbout(payload);
         showToast('About Section saved successfully!', "top-center", 3000, "dark");
-      }else{
+      } else {
         showToast('Enable About Me to Save', "top-center", 3000, "dark");
         return;
       }

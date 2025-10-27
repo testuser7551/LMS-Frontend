@@ -7,6 +7,7 @@ const NewThreadForm = ({ isOpen, onClose, onSubmit, forums, currentUser }) => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [forumId, setForumId] = useState(forums[0]?.id || "");
+  const [forumTitle, setForumTitle] = useState(forums[0]?.name || "");
   const [tags, setTags] = useState([]);
   const [tagInput, setTagInput] = useState("");
   const [availableFrom, setAvailableFrom] = useState("");
@@ -24,6 +25,7 @@ const NewThreadForm = ({ isOpen, onClose, onSubmit, forums, currentUser }) => {
       title: title.trim(),
       content,
       forumId,
+      forumTitle,
       tags,
       availableFrom: availableFrom || undefined,
       availableTo: availableTo || undefined,
@@ -97,7 +99,14 @@ const NewThreadForm = ({ isOpen, onClose, onSubmit, forums, currentUser }) => {
               </label>
               <select
                 value={forumId}
-                onChange={(e) => setForumId(e.target.value)}
+                onChange={(e) => {    
+                  const selectedId = e.target.value;
+                  setForumId(selectedId);
+                  const selectedForum = forums.find((forum) => forum.id === selectedId);
+                  if (selectedForum) {
+                    setForumTitle(selectedForum.name);
+                  }
+                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-poppins"
                 required
               >

@@ -7,7 +7,6 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState(null);
-
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -17,38 +16,18 @@ export const AuthProvider = ({ children }) => {
     } else {
       setToken(token);
     }
-
-    try {
-      const decoded = jwtDecode(token);
-     // console.log("Decoded JWT:", decoded);
-      if (decoded.exp && decoded.exp * 1000 < Date.now()) {
-        // expired
-        localStorage.removeItem("token");
-        setUser(null);
-        setLoading(false);
-      } else {
-        // ✅ set minimal user from token
-        setUser({
-          id: decoded.id || decoded.sub,
-          email: decoded.email,
-          role: decoded.role,
-          name: decoded.name,
-        });
-        setLoading(false);
-      }
-    } catch (err) {
-      localStorage.removeItem("token");
-      setUser(null);
-      setLoading(false);
-    }
   }, []);
 
   const setUserContext = (val) => {
     setUser(val);
+    setLoading(false);
+  }
+  const setLoadingFront=(val)=>{
+    setLoading(val);
   }
 
   return (
-    <AuthContext.Provider value={{token, user, loading, setUserContext }}>
+    <AuthContext.Provider value={{token, user, loading, setUserContext ,setLoadingFront }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,13 +1,14 @@
-import React, { useState } from "react";
+import React, { useState,useContext } from "react";
 import { X } from "lucide-react";
 import {
   updateLinkSection,
 } from "../../../../../api/carddesign/contentSection";
 import { showToast } from "../../../../../components/toast.js";
+import { CardContext } from '../../../../../context/CardContext';
 
 function LinkSection({ linkSection, onChange }) {
 
-
+const { userCard } = useContext(CardContext);
   const handleSave = async () => {
     try {
       // ✅ Simple validation
@@ -19,15 +20,17 @@ function LinkSection({ linkSection, onChange }) {
         showToast('Link Required', "top-center", 5000, "dark");
         return;
       }
-
+      const payload = {
+          linkSection: linkSection,
+          user_id: userCard?.user_id || "",
+        };
       //  Proceed with saving
-      const saved = await updateLinkSection(linkSection);
+      const saved = await updateLinkSection(payload);
       showToast('Link Section saved successfully!', "top-center", 5000, "dark");
     } catch (err) {
       showToast('Failed to save Link Section', "top-center", 5000, "dark");
     }
   }
-
 
   return (
     <div className="bg-[var(--color-bgcolor)] p-4 rounded-lg mt-4 border border-[var(--color-secondarybgcolor)]">

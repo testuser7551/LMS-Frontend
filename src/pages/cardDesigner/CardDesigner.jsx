@@ -1,8 +1,9 @@
 import React, { useRef, useState, useEffect, useContext } from 'react';
 import CardPreview from './CardPreview';
 import { CreditCard, Save, Share2, Eye, Search, User, Palette, Type, Settings } from 'lucide-react';
-import { getCardDesign } from "../../api/card-design";
+import { getCardDesign, getCardDesignWithId } from "../../api/card-design";
 import { AuthContext } from '../../context/AuthContext';
+import { CardContext } from '../../context/CardContext';
 import AboutSection from './Tabs/AboutSection';
 import ContentSection from './Tabs/ContentSection';
 import StylesSection from './Tabs/StylesSection';
@@ -10,17 +11,22 @@ import SettingsSection from './Tabs/SettingsSection';
 import { showToast } from "../../components/toast";
 import { useNavigate } from "react-router-dom";
 import { ShareModal } from "./components/ShareModal";
+import { useLocation } from "react-router-dom";
 
 const CardDesigner = () => {
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
+  const { userCard, setCardContext } = useContext(CardContext);
+  const location = useLocation();
+
+  const { cardId } = location.state || {};
   const [card, setCard] = useState({
     about: {
       basicdetails: {
         name: "", email: "", mobilenumber: "", jobTitle: "",
         organization: "", location: "", cardVisibility: false,
       },
-      mainButton: { buttonType: "call", buttonText: "", buttonInput: "" },
+      mainButton: { buttonType: "", buttonText: "", buttonInput: "" },
       whatsappButton: { whatsappNumber: "", message: "", isEnabled: false },
     },
     content: {
@@ -45,26 +51,40 @@ const CardDesigner = () => {
     },
   });
 
-
   useEffect(() => {
+    //for all users.
     const fetchCard = async () => {
       try {
         const data = await getCardDesign();
         if (data) {
           setCard(data);
+          setCardContext(null);
         }
       } catch (err) {
         console.error("Error fetching Card:", err);
       }
     };
+    //for admin while click Edit another user card.
+    const fetchCardById = async () => {
+      try {
+        const data = await getCardDesignWithId(cardId);
+        if (data) {
+          setCard(data);
+          setCardContext(data);
+        }
+      } catch (err) {
+        console.error("Error fetching Card with Id:", err);
+      }
+    };
+    if (!cardId)
+      fetchCard();
+    else {
+      fetchCardById();
+    }
+  }, [cardId]);
 
-    fetchCard();
-  }, []);
   const [isOpen, setIsOpen] = useState(false);
-
   const [activeTab, setActiveTab] = useState("about");
-
-
   const tabsConfig = [
     {
       id: "about",
@@ -98,22 +118,27 @@ const CardDesigner = () => {
 
   const handleViewCard = () => {
     const shareUrl = `/cardview?id=${card._id}`;
-    navigate(shareUrl);
+    window.open(shareUrl, "_blank"); // opens in new tab
   };
+
 
   const handleShareCard = () => {
     setIsOpen(true);
   };
-
+  console.log("card data in designer:", userCard);
   return (
     <>
-      <div className="p-4 sm:p-6 lg:p-4 xl:p-8 bg-gray-50 min-h-screen">
+      {/* <div className="p-4 sm:p-6 lg:p-4 xl:p-8 bg-gray-50 min-h-screen">
         <div className="max-w-9xl mx-auto">
-          {/* Header */}
+          
 
           <div className="bg-white rounded-2xl p-6 mb-6 shadow-sm border border-gray-100">
             <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
-              <h1 className="text-[30px] font-bold font-poppins text-headcolor">Web Cards</h1>
+              {cardId ?
+                (<h1 className="text-[30px] font-bold font-poppins text-headcolor">{`Editing - ${userCard?.about?.basicdetails?.name}'s Card`}</h1>) :
+                (<h1 className="text-[30px] font-bold font-poppins text-headcolor">Web Cards</h1>)
+              }
+
 
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
@@ -133,7 +158,6 @@ const CardDesigner = () => {
           </div>
 
 
-          {/* Tabs */}
 
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
 
@@ -155,25 +179,10 @@ const CardDesigner = () => {
               </nav>
             </div>
 
-            {/* for admin only the All Cards section showing */}
-
-
-            {/* Students to access card editor */}
-            {/* {activeTab === 'editor' && (
-              <div className="p-4 sm:p-6 lg:p-4 xl:p-8 flex flex-wrap">
-                <div className='flex flex-wrap lg:flex-nowrap w-full gap-2 justify-between'>
-                  <div className='w-full lg:w-[60%]'>
-                    <CardEditor card={card} onCardChange={setCard} />
-                  </div>
-                  <div className='w-full lg:w-[38%] flex justify-center'>
-                    <CardPreview card={card} previewMode="desktop" />
-                  </div>
-                </div>
-              </div>
-            )} */}
+           
             <div className="p-4 sm:p-6 lg:p-4 xl:p-8 flex flex-wrap">
               <div className="flex flex-wrap lg:flex-nowrap w-full gap-2 justify-between">
-                <div className="w-full lg:w-[60%]">
+                <div className="w-full lg:w-[60%] min-w-0">
                   {activeTab === 'about' && (
                     <AboutSection card={card} onCardChange={setCard} />
                   )}
@@ -188,15 +197,99 @@ const CardDesigner = () => {
                   )}
                 </div>
 
-                {/* Preview Always on Right Side */}
-                <div className="w-full lg:w-[38%] flex justify-center">
+           
+                <div className="w-full lg:w-[38%] flex justify-center min-w-0">
                   <CardPreview card={card} previewMode="desktop" />
                 </div>
               </div>
             </div>
           </div>
         </div>
+      </div> */}
+
+      <div className="p-4 sm:p-6 lg:p-4 xl:p-8 bg-gray-50 min-h-screen overflow-x-hidden">
+  <div className="max-w-9xl mx-auto w-full">
+
+    <div className="bg-white rounded-2xl p-4 sm:p-6 mb-6 shadow-sm border border-gray-100 w-full overflow-hidden">
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 w-full">
+        {cardId ? (
+          <h1 className="text-[24px] sm:text-[28px] lg:text-[30px] font-bold font-poppins text-headcolor text-center lg:text-left w-full break-words">
+            {`Editing - ${userCard?.about?.basicdetails?.name}'s Card`}
+          </h1>
+        ) : (
+          <h1 className="text-[24px] sm:text-[28px] lg:text-[30px] font-bold font-poppins text-headcolor text-center lg:text-left w-full break-words">
+            Web Cards
+          </h1>
+        )}
+
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto justify-center lg:justify-end flex-wrap">
+          <button
+            onClick={handleViewCard}
+            className="flex items-center justify-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-headcolor cursor-pointer text-sm sm:text-base w-full sm:w-auto"
+          >
+            <Eye size={18} /> View Card
+          </button>
+          <button
+            onClick={handleShareCard}
+            className="flex items-center justify-center gap-2 border border-gray-300 text-subtext px-4 py-2 rounded-lg hover:bg-headcolor hover:text-white cursor-pointer text-sm sm:text-base w-full sm:w-auto"
+          >
+            <Share2 size={18} /> Share
+          </button>
+        </div>
       </div>
+    </div>
+
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 w-full overflow-hidden">
+
+    
+      <div className="border-b border-gray-200 w-full">
+        <nav className="flex flex-wrap justify-start items-center w-full">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 px-4 py-3 font-medium font-poppins text-sm sm:text-base rounded-t-md transition ${
+                activeTab === tab.id
+                  ? 'bg-activecolor text-primary border-b-2 border-primary'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+              }`}
+            >
+              {tab.icon}
+              <span className="whitespace-nowrap">{tab.label}</span>
+            </button>
+          ))}
+        </nav>
+      </div>
+
+   
+      <div className="p-4 sm:p-6 lg:p-4 xl:p-8 flex flex-col lg:flex-row flex-wrap w-full gap-4">
+        <div className="flex flex-col lg:flex-row flex-wrap lg:flex-nowrap w-full gap-4 justify-between">
+
+          <div className="w-full lg:w-[60%] min-w-0 overflow-hidden">
+            {activeTab === 'about' && (
+              <AboutSection card={card} onCardChange={setCard} />
+            )}
+            {activeTab === 'content' && (
+              <ContentSection card={card} onCardChange={setCard} />
+            )}
+            {activeTab === 'style' && (
+              <StylesSection card={card} onCardChange={setCard} />
+            )}
+            {activeTab === 'settings' && (
+              <SettingsSection card={card} onCardChange={setCard} />
+            )}
+          </div>
+
+      
+            <div className="w-full lg:w-[38%] flex justify-center min-w-0">
+                  <CardPreview card={card} previewMode="desktop" />
+                </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
       {isOpen && (
         <ShareModal card={card} onClose={() => setIsOpen(false)} />
       )}

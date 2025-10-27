@@ -117,7 +117,7 @@ function StylesSection({ card, onCardChange }) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 w-full max-w-full min-w-0">
       <ProfilePhoto profile={profile} onChange={handleProfileChange} />
       <BannerPhoto bannerFile={bannerFile} bannerPreview={bannerPreview} handleBannerChange={handleBannerChange} />
 

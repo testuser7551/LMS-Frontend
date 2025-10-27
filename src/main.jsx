@@ -4,12 +4,16 @@ import './index.css'
 import App from './App.jsx'
 import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
+import { CardProvider } from './context/CardContext'
+
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
       <AuthProvider>
-        <App />
+        <CardProvider>
+          <App />
+        </CardProvider >
       </AuthProvider>
     </BrowserRouter>
   </StrictMode>
