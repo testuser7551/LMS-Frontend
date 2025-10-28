@@ -9,7 +9,6 @@ export const getUsersData = async (params = {}) => {
 export const fetchMentorsAndInstructorsAPI = async (search = "") => {
   try {
     const response = await getRequest(`/api/mentors-instructors?search=${search}`);
-    console.log("siva users",response);
     return response.data;
   } catch (error) {
     console.error("Error fetching mentors/instructors:", error);

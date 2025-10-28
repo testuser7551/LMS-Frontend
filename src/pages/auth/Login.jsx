@@ -17,37 +17,58 @@ const LoginPage = () => {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault()
+  //   setError('')
+  //   setLoading(true)
 
-
-
-
-
-
-
-  
-
+  //   try {
+  //     const loggedUser = await loginUser(email, password);
+  //     console.log("loggedUser",loggedUser);
+  //     setUserContext(loggedUser);
+  //     showToast('Login Successful', "top-center", 10000, "dark");
+  //     if(loggedUser.role==="superAdmin"){
+  //       navigate('/superadmin');
+  //     }else{
+  //     navigate('/courses')  // redirect after login
+  //     }
+  //   } catch (err) {
+  //     // setError(err.message || 'Invalid credentials')
+  //     showToast('Invalid credentials', "top-center", 10000, "dark");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
+  e.preventDefault(); // 🧱 Stop default form submission
+  setError('');
+  setLoading(true);
 
-    try {
-      const loggedUser = await loginUser(email, password);
-      console.log("loggedUser",loggedUser);
-      setUserContext(loggedUser);
-      showToast('Login Successful', "top-center", 10000, "dark");
-      if(loggedUser.role==="superAdmin"){
-        navigate('/superadmin');
-      }else{
-      navigate('/courses')  // redirect after login
-      }
-    } catch (err) {
-      // setError(err.message || 'Invalid credentials')
-      showToast('Invalid credentials', "top-center", 10000, "dark");
-    } finally {
-      setLoading(false);
+  try {
+    const loggedUser = await loginUser(email.trim(), password);
+    console.log("loggedUser", loggedUser);
+
+    if (!loggedUser || !loggedUser.role) {
+      throw new Error("Invalid credentials");
     }
+
+    setUserContext(loggedUser);
+    showToast('Login Successful', "top-center", 3000, "dark");
+
+    if (loggedUser.role === "superAdmin") {
+      navigate('/superadmin');
+    } else {
+      navigate('/courses');
+    }
+
+  } catch (err) {
+    console.error("Login error:", err);
+    showToast('Invalid credentials', "top-center", 3000, "dark");
+  } finally {
+    setLoading(false);
   }
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
@@ -71,7 +92,8 @@ const LoginPage = () => {
         )}
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+        <form onSubmit={(e) => { e.preventDefault(); handleSubmit(e); }} className="space-y-4 sm:space-y-6">
+
           {/* Email */}
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2 font-outfit text-primary">Email</label>

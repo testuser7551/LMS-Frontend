@@ -9,9 +9,26 @@ const BASE_URL = `${API_BASE}/api/courses`;
 // Courses
 // ----------------------
 // Fetch all courses
-export const fetchCoursesAPI = async () => {
+// export const fetchCoursesAPI = async () => {
+//     try {
+//         const response = await api.get(BASE_URL);
+//         return response.data.courses || [];
+//     } catch (error) {
+//         console.error("Error fetching courses:", error.response?.data || error.message);
+//         throw error;
+//     }
+// };
+
+// In your helper file
+export const fetchCoursesAPI = async (schoolId = null) => {
     try {
-        const response = await api.get(BASE_URL);
+        const params = {};
+        if (schoolId) {
+            params.schoolId = schoolId;
+        }
+        
+        const response = await api.get(BASE_URL, { params });
+        console.log("📡 API Response:", response.data);
         return response.data.courses || [];
     } catch (error) {
         console.error("Error fetching courses:", error.response?.data || error.message);
