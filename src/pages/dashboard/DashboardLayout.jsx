@@ -105,7 +105,6 @@ const DashboardLayout = ({ allowedRoles }) => {
       // Update local context with new user info
       setUserContext(updatedUser);
 
-      console.log("Profile updated:", updatedUser);
       showToast("Profile updated successfully!","top-center",10000,"dark");
 
       // Clear password fields after update

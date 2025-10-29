@@ -19,11 +19,9 @@ import { fetchMentorsAndInstructorsAPI } from "../../api/usermanagement/usermana
 
 
 const AddUser = ({ setShowRegisterModal, onUserAdded, schoolId, editMode = false, userId }) => {
-  console.log("User ID SIVA:", userId);
   const API_BASE = import.meta.env.VITE_API_BASE;
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
-  console.log("Current User Role:", user?.role);
   const [formData, setFormData] = useState({
     schoolId,
     fname: "",
@@ -71,8 +69,7 @@ const AddUser = ({ setShowRegisterModal, onUserAdded, schoolId, editMode = false
       const fetchUser = async () => {
         try {
           setLoading(true);
-          const res = await getSingleUser(userId); // res = { message, data }
-
+          const res = await getSingleUser(userId, schoolId); // res = { message, data }
           const userData = res.data; // ✅ extract the user object
 
           setFormData({
@@ -189,10 +186,6 @@ const AddUser = ({ setShowRegisterModal, onUserAdded, schoolId, editMode = false
           data.append("assignedStudentName", `${selectedMentorInstructor.name}`);
         }
       }      
-
-      for (const [key, value] of data.entries()) {
-        console.log(`${key}:`, value);
-      }
 
       const newUser = await registerUser(data);
       showToast("User created successfully", "top-center", 10000, "dark");

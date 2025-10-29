@@ -35,7 +35,6 @@ const Students = ({ mentorId, schoolId }) => {
     try {
       setLoading(true);
       const res = await getStudentsByMentor(mentorId, schoolId, currentPage, studentsPerPage);
-      console.log("Total courses:", res.totalCourses);
       const fetchedStudents = res.data || [];
       setTotalCourses(res.totalCourses || 0);
       setStudents(fetchedStudents);

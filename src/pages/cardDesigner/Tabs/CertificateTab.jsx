@@ -71,7 +71,6 @@ import { CardContext } from '../../../context/CardContext';
 function CertificateTab({ certification, onChange }) {
   const { userCard } = useContext(CardContext);
 
-  //console.log("certificate",certification);
   const updateField = (section, field, value) => {
     onChange({
       ...certification,

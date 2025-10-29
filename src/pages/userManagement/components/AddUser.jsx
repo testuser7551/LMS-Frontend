@@ -19,7 +19,6 @@ import { fetchMentorsAndInstructorsAPI } from "../../../api/usermanagement/userm
 
 
 const AddUser = ({ setShowRegisterModal, onUserAdded, schoolId, editMode = false, userId }) => {
-  console.log("User ID SIVA:", userId);
   const API_BASE = import.meta.env.VITE_API_BASE;
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
@@ -49,7 +48,6 @@ const AddUser = ({ setShowRegisterModal, onUserAdded, schoolId, editMode = false
     const fetchMentorsAndInstructors = async () => {
       try {
         const data = await fetchMentorsAndInstructorsAPI();
-        console.log(data);
         let filteredData = [];
         if (formData.role === "student") {
           filteredData = data.filter((u) => u.role === "mentor" || u.role === "instructor");
@@ -189,11 +187,6 @@ const AddUser = ({ setShowRegisterModal, onUserAdded, schoolId, editMode = false
           data.append("assignedStudentName", `${selectedMentorInstructor.name}`);
         }
       }      
-
-      for (const [key, value] of data.entries()) {
-        console.log(`${key}:`, value);
-      }
-
       const newUser = await registerUser(data);
       showToast("User created successfully", "top-center", 10000, "dark");
       if (onUserAdded) onUserAdded();

@@ -31,7 +31,6 @@ const MyCard = () => {
       try {
         setLoading(true);
         const res = await getCardDesign();
-        // console.log("Response", res);
         const data = res;
         if (data) {
           const updatedCard = {

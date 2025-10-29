@@ -7,7 +7,6 @@ import { getRequest, postRequest, deleteRequest } from "../api";
 export const fetchEnrollments = async () => {
     try {
         const data = await getRequest("/api/courses/enrollment");
-        //console.log(data)
         return data; // returns array of enrollments
     } catch (error) {
         console.error("Error fetching enrollments:", error);

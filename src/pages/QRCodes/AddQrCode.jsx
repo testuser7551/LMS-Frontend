@@ -60,24 +60,6 @@ const AddQrCode = (props) => {
   };
 
 
-
-  console.log(fileType, qrMode, dotColor, bkColor, cornerBoxColor, cornerDotColor, selectedShape, selectedDotShape, url, title, selectedLogo, qrType);
-  console.log(user._id);
-
-  console.log("fileType:", fileType);
-  console.log("qrMode:", qrMode);
-  console.log("dotColor:", dotColor);
-  console.log("bkColor:", bkColor);
-  console.log("cornerBoxColor:", cornerBoxColor);
-  console.log("cornerDotColor:", cornerDotColor);
-  console.log("selectedShape:", selectedShape);
-  console.log("selectedDotShape:", selectedDotShape);
-  console.log("url:", url);
-  console.log("title:", title);
-  console.log("selectedLogo:", selectedLogo);
-  console.log("qrType:", qrType);
-
-
   // Add this useEffect to fetch data when editQrId prop changes
   useEffect(() => {
     const fetchQrCodeData = async () => {
@@ -325,11 +307,6 @@ END:VCARD`;
 
     if (!blob) return showError("Failed to generate QR blob");
 
-    console.log("📦 Generated blob:", {
-      size: blob.size,
-      type: blob.type
-    });
-
     // Prepare FormData - FIXED
     const formData = new FormData();
     formData.append("qrImage", blob, `qrcode.${fileType}`); // This should work now
@@ -339,12 +316,6 @@ END:VCARD`;
     formData.append("pattern", JSON.stringify({ type: qrType, backColor: bkColor, foreColor: dotColor }));
     formData.append("corner", JSON.stringify({ boxType: selectedShape, boxColor: cornerBoxColor, dotStyle: selectedDotShape, dotColor: cornerDotColor }));
     formData.append("logoUrl", selectedLogo || "");
-
-    // Debug: Check FormData contents
-    console.log("📦 FormData entries:");
-    for (let [key, value] of formData.entries()) {
-      console.log(`  ${key}:`, value instanceof Blob ? `Blob(${value.size} bytes)` : value);
-    }
 
     try {
       let data;

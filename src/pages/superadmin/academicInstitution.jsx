@@ -34,6 +34,18 @@ const AcademicInstitution = () => {
     createdBy: { role: user.role, name: user.name },
   });
 
+  const resetFormState = () => {
+  setFormData({
+    name: "",
+    address: "",
+    contactEmail: "",
+    contactPhone: "",
+    createdBy: { role: user.role, name: user.name },
+  });
+  setEditingSchool(null);
+  setErrors({});
+};
+
   const [pagination, setPagination] = useState({
     total: 0,
     page: 1,
@@ -45,7 +57,6 @@ const AcademicInstitution = () => {
     const fetchStats = async () => {
       try {
         const res = await getPlatformStatsAPI();
-        console.log(res.data);
         if (res.success) setStats(res.data);
       } catch (err) {
         console.error("Error fetching stats:", err.message);
@@ -220,7 +231,10 @@ const AcademicInstitution = () => {
           Academic Institution
         </h1>
         <button
-          onClick={() => setShowForm(true)}
+            onClick={() => {
+              resetFormState(); 
+              setShowForm(true); 
+            }}
           className="bg-primary text-white px-4 py-2 rounded-lg shadow hover:opacity-90 cursor-pointer"
         >
           + Add School

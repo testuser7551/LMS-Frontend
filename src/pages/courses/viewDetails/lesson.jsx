@@ -98,14 +98,12 @@ const Lesson = ({ lesson, number, setPercentage , isEnrolled }) => {
           lesson.chapterId,
           lesson._id
         );
-        console.log(result.completed);
 
         if (result.completed) {
           setQuizCompleted(true);
           setIsCompleted(true);
         }
         const response = await fullProgress(user._id, lesson.courseId);
-        console.log(response.percentage);
         const progressPercent = response.percentage;
 
         setPercentage(progressPercent);

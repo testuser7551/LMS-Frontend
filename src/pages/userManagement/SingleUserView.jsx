@@ -63,8 +63,6 @@ function SingleUserView() {
     }
   };
 
-  console.log("id of users",id);
-  console.log("The Current User data is :",selecteduser);
   return (
     <div className="bg-gray-50 min-h-screen flex justify-center ">
       {/* Scrollable Content */}

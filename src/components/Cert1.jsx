@@ -48,7 +48,6 @@ const Cert1 = () => {
         formData.append("certificate", imgBlob, `${details.course}_certificate.png`); 
 
         const data = await markCourseCompletedAPI(formData);
-      //  console.log(data);
         if (data.success) {
           setMessage("Course marked as completed with certificate!");
           setCompletedData(data.completedCourse);

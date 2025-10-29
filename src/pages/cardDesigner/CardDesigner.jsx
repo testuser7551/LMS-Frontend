@@ -125,7 +125,6 @@ const CardDesigner = () => {
   const handleShareCard = () => {
     setIsOpen(true);
   };
-  console.log("card data in designer:", userCard);
   return (
     <>
       {/* <div className="p-4 sm:p-6 lg:p-4 xl:p-8 bg-gray-50 min-h-screen">

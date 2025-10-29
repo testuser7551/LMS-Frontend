@@ -64,7 +64,6 @@ function SingleCardView() {
         setLoading(true);
         try {
           const res = await getCardDesignWithId(cardId);
-          //  console.log("getCardDesign", res);
           const fetchedCard = res;
           if (fetchedCard?.content?.youtubeSections?.link) {
             fetchedCard.content.youtubeSections.link = getYouTubeEmbedUrl(
@@ -125,9 +124,7 @@ function SingleCardView() {
     );
     if (!confirmDownload) return;
     try {
-      console.log(`${API_BASE}${cert}`);
       const response = await fetch(`${API_BASE}${cert}`);
-      console.log(response);
       if (!response.ok) throw new Error("Failed to fetch certificate");
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);

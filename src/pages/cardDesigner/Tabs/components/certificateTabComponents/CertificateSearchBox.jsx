@@ -92,7 +92,6 @@ function CertificateSearchBox({ certification, onChange }) {
       return updated;
     });
 
-    console.log("Removed certificate:", imagePath);
   };
 
   // Handle keyboard navigation

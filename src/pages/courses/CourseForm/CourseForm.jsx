@@ -190,7 +190,7 @@ const CourseForm = () => {
     formData.append("instructor", course.instructor);
     formData.append("tags", JSON.stringify(course.tags));
     formData.append("image", course.image);
-    formData.append("schoolObjectId", "68ce4ebb10ca5e6bb67b0dca");
+    // formData.append("schoolObjectId", "68ce4ebb10ca5e6bb67b0dca");
     formData.append("chapters", JSON.stringify(course.chapters));
 
     try {

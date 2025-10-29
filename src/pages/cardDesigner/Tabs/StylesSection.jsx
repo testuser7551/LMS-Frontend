@@ -18,11 +18,6 @@ function StylesSection({ card, onCardChange }) {
     card?.style?.themesSection || {}
   );
 
-  // ✅ Debug: log themes when it changes
-  useEffect(() => {
-    ////console.log("🎨 Current Theme Styles:", themesSection);
-  }, [themesSection]);
-
   const handleProfileChange = (key, value) => {
     const updatedValue =
       key === "profileRingOnPhoto" || key === "profileVerified"

@@ -37,7 +37,6 @@ const Cert2 = () => {
   
         // Call API
         const data = await markCourseCompletedAPI(formData);
-      //  console.log(data);
   
         if (data.success) {
           setMessage("Course marked as completed with certificate!");

@@ -46,7 +46,6 @@ const LoginPage = () => {
 
   try {
     const loggedUser = await loginUser(email.trim(), password);
-    console.log("loggedUser", loggedUser);
 
     if (!loggedUser || !loggedUser.role) {
       throw new Error("Invalid credentials");

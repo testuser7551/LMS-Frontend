@@ -35,7 +35,7 @@ const CardPreview = ({ card }) => {
   const [activeTab, setActiveTab] = useState("home");
   const profile = card?.style?.profileSection || {};
   const previewMode = "desktop" || "";
-  console.log("From Preview", card)
+  
   // set banner once
   const banner = card?.style?.bannerImgUrl || "";
 

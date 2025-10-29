@@ -28,7 +28,6 @@ export const fetchCoursesAPI = async (schoolId = null) => {
         }
         
         const response = await api.get(BASE_URL, { params });
-        console.log("📡 API Response:", response.data);
         return response.data.courses || [];
     } catch (error) {
         console.error("Error fetching courses:", error.response?.data || error.message);
@@ -42,7 +41,7 @@ export const fetchAssignedCoursesAPI = async (instructorId) => {
     const response = await api.get(`${BASE_URL}/assigned/usercourses`, {
       params: { instructorId },
     });
-    console.log(response.data);
+    console.log(response);
     return response.data.fullCourses || [];
   } catch (error) {
     console.error("Error fetching assigned courses:", error.response?.data || error.message);

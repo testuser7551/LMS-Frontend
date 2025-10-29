@@ -14,7 +14,6 @@ function QuickStats({ selecteduser }) {
         if (!selecteduser?._id) return;
   
         const res = await fetchMentorDashboard(selecteduser._id);
-        console.log("Mentor Dashboard Data:", res);
   
         if (res.success) {
           // Format backend date (like "2025/10") → "Oct 2025"

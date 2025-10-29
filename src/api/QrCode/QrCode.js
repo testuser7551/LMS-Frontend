@@ -9,7 +9,6 @@ const API_BASE = import.meta.env.VITE_API_BASE;
 
 export const saveQrCodeAPI = async (formData) => {
   try {
-    console.log("Saving QR Code:");
     for (let pair of formData.entries()) console.log(pair[0], pair[1]);
 
     const response = await api.post(`${API_BASE}/api/qrcode/create`, formData, {
@@ -20,8 +19,6 @@ export const saveQrCodeAPI = async (formData) => {
       //   "Authorization": `Bearer ${yourToken}`
       // }
     });
-
-    console.log("QR Code saved:", response.data);
     return response.data; // contains success, message, etc.
   } catch (error) {
     console.error("Error saving QR Code:", error.response?.data || error.message);
@@ -78,20 +75,11 @@ export const deleteQrCode = async (id) => {
 
 
 export const updateQrCode = async (id, formData) => {
-
-  
-  // Log FormData entries for debugging
-  for (let [key, value] of formData.entries()) {
-    console.log(`  ${key}:`, value instanceof Blob ? `Blob(${value.size} bytes, ${value.type})` : value);
-  }
-
   try {
     // Use putRequest but override Content-Type for FormData
     const data = await putRequest(`/api/qrcode/updateqr/${id}`, formData, {
       'Content-Type': 'multipart/form-data', // Override the default JSON header
     });
-
-    console.log("✅ Update successful:", data);
     return data;
   } catch (error) {
     console.error("❌ Update failed:", error);

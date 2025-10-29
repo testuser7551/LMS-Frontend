@@ -5,7 +5,6 @@ import { FaUsers, FaGraduationCap, FaChalkboardTeacher, FaUserGraduate } from "r
 
 function Stats({ rolesCount }) {
     const { user} = useContext(AuthContext);
-    console.log("The User :", user.role);
     let stats = [];
 
     if (user?.role === "admin") {
