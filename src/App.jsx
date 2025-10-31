@@ -69,6 +69,7 @@ function App() {
           <Route path="qrcode" element={<QrCode />} />
           <Route path="studentcard" element={<MyCard />} />
           <Route path="discussions" element={<DiscussionPage />} />
+           <Route path="discussions/:threadId" element={<DiscussionPage />} />
           <Route path="users" element={<UserManagement />}>
             <Route path="add-users" element={<AddUser />} />
             

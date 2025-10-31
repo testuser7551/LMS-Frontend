@@ -4,7 +4,6 @@ import { X, Tag, Calendar, Users } from "lucide-react";
 import RichTextEditor from "./RichTextEditor";
 
 const NewThreadForm = ({ isOpen, onClose, onSubmit, forums, currentUser }) => {
-  console.log("forums in NewThreadForm:", forums);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [forumId, setForumId] = useState(forums[0]?.id || "");

@@ -1,7 +1,6 @@
-import {postRequest, deleteRequest, getRequest} from "../../api/api";
+import {postRequest, deleteRequest, putRequest} from "../../api/api";
 
 const BASE_URL = '/api/discussion';
-
 
 export const fetchDiscussion = async (disData) => {
     try {        
@@ -21,7 +20,6 @@ export const addDiscussion = async (disData) => {
     }
 };
 
-
 export const likeDiscussion = async (disData) => {
     try {        
         const response = await postRequest(`${BASE_URL}/likeDis`, disData);
@@ -40,22 +38,12 @@ export const deleteDiscussion = async (disData) => {
     }
 };
 
-
-
-export const addReply = async (replyData) => {
-  try {
-    const response = await postRequest(`${BASE_URL}/addReply`, replyData);
-    return response || [];
-  } catch (error) {
-    throw error;
-  }
-};
-
-export const fetchReplies = async (discussionId) => {
-  try {
-    const response = await getRequest(`${BASE_URL}/${discussionId}/replies`);
-    return response || [];
-  } catch (error) {
-    throw error;
-  }
+// PUT request helper for adding replies
+export const addReplyToDiscussion = async (discussionId, replyData) => {
+    try {        
+        const response = await putRequest(`${BASE_URL}/${discussionId}/reply`, replyData);
+        return response || [];
+    } catch (error) {
+        throw error;
+    }
 };

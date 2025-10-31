@@ -4,10 +4,10 @@ import ForumApp from "./ForumApp";
 import { useParams } from "react-router-dom";
 
 const DiscussionPage = () => {
-  const { threadId } = useParams();
+  const { threadId } = useParams(); 
   return (
     <div className="">
-      <ForumApp threadId={threadId} />
+      <ForumApp threadId={threadId}/>
     </div>
   );
 };
